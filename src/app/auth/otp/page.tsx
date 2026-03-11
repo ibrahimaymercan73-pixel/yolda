@@ -1,12 +1,13 @@
 "use client";
 
+import { Suspense } from "react";
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { verifyPhoneOtp } from "@/lib/auth";
 
 const OTP_LENGTH = 4;
 
-export default function OtpPage() {
+function OtpContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const phone = searchParams.get("phone") ?? "";
@@ -117,6 +118,20 @@ export default function OtpPage() {
         </section>
       </main>
     </div>
+  );
+}
+
+export default function OtpPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-background text-sm text-slate-400">
+          Kod ekranı yükleniyor...
+        </div>
+      }
+    >
+      <OtpContent />
+    </Suspense>
   );
 }
 

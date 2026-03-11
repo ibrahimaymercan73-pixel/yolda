@@ -41,12 +41,7 @@ export default function SoforOnayBeklemePage() {
             );
           }
         }
-      )
-      .subscribe((status) => {
-        if (status === "SUBSCRIPTION_ERROR") {
-          setError("Gerçek zamanlı bağlantı kurulamadı.");
-        }
-      });
+      );
 
     return () => {
       supabase.removeChannel(channel);

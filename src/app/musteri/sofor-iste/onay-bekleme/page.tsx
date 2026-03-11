@@ -1,12 +1,13 @@
 "use client";
 
+import { Suspense } from "react";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
 const COUNTDOWN_SECONDS = 10;
 
-export default function SoforOnayBeklemePage() {
+function SoforOnayBeklemeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestId = searchParams.get("request_id");
@@ -107,6 +108,20 @@ export default function SoforOnayBeklemePage() {
         </section>
       </main>
     </div>
+  );
+}
+
+export default function SoforOnayBeklemePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-background text-sm text-slate-400">
+          Şoför onay ekranı yükleniyor...
+        </div>
+      }
+    >
+      <SoforOnayBeklemeContent />
+    </Suspense>
   );
 }
 

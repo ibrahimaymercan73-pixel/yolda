@@ -1,11 +1,12 @@
-"use client";
+ "use client";
 
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { getCurrentUser } from "@/lib/auth";
 
-export default function SoforOdemePage() {
+function SoforOdemeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestId = searchParams.get("request_id");
@@ -154,6 +155,20 @@ export default function SoforOdemePage() {
         </section>
       </main>
     </div>
+  );
+}
+
+export default function SoforOdemePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-background text-sm text-slate-400">
+          Ödeme ekranı yükleniyor...
+        </div>
+      }
+    >
+      <SoforOdemeContent />
+    </Suspense>
   );
 }
 

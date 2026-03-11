@@ -1,11 +1,12 @@
-"use client";
+ "use client";
 
+import { Suspense } from "react";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { getCurrentUser } from "@/lib/auth";
 
-export default function CekiciTalepPage() {
+function CekiciTalepContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const towRequestId = searchParams.get("request_id");
@@ -191,6 +192,20 @@ export default function CekiciTalepPage() {
         </section>
       </main>
     </div>
+  );
+}
+
+export default function CekiciTalepPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-background text-sm text-slate-400">
+          Çekici talebi yükleniyor...
+        </div>
+      }
+    >
+      <CekiciTalepContent />
+    </Suspense>
   );
 }
 

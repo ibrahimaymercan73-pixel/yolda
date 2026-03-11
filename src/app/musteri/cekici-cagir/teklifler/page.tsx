@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
@@ -10,7 +11,7 @@ type TowOfferRow = {
   price: number;
 };
 
-export default function CekiciTekliflerPage() {
+function CekiciTekliflerContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestId = searchParams.get("request_id");
@@ -147,6 +148,20 @@ export default function CekiciTekliflerPage() {
         </section>
       </main>
     </div>
+  );
+}
+
+export default function CekiciTekliflerPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-background text-sm text-slate-400">
+          Çekici teklifleri yükleniyor...
+        </div>
+      }
+    >
+      <CekiciTekliflerContent />
+    </Suspense>
   );
 }
 

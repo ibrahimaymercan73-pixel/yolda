@@ -1,10 +1,11 @@
-"use client";
+ "use client";
 
+import { Suspense } from "react";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
-export default function SoforYoldaPage() {
+function SoforYoldaContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestId = searchParams.get("request_id");
@@ -117,6 +118,20 @@ export default function SoforYoldaPage() {
         </section>
       </main>
     </div>
+  );
+}
+
+export default function SoforYoldaPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-background text-sm text-slate-400">
+          Şoför durumu yükleniyor...
+        </div>
+      }
+    >
+      <SoforYoldaContent />
+    </Suspense>
   );
 }
 

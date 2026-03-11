@@ -1,10 +1,11 @@
 "use client";
 
+import { Suspense } from "react";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
-export default function CekiciBeklemePage() {
+function MusteriCekiciBeklemeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestId = searchParams.get("request_id");
@@ -92,6 +93,20 @@ export default function CekiciBeklemePage() {
         </section>
       </main>
     </div>
+  );
+}
+
+export default function CekiciBeklemePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-background text-sm text-slate-400">
+          Teklif bekleme ekranı yükleniyor...
+        </div>
+      }
+    >
+      <MusteriCekiciBeklemeContent />
+    </Suspense>
   );
 }
 

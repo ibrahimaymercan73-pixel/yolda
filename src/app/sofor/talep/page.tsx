@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
@@ -7,7 +8,7 @@ import { getCurrentUser } from "@/lib/auth";
 
 const TOTAL_SECONDS = 10;
 
-export default function SoforTalepPage() {
+function SoforTalepContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestId = searchParams.get("request_id");
@@ -179,6 +180,20 @@ export default function SoforTalepPage() {
         </section>
       </main>
     </div>
+  );
+}
+
+export default function SoforTalepPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-background text-sm text-slate-400">
+          İş talebi yükleniyor...
+        </div>
+      }
+    >
+      <SoforTalepContent />
+    </Suspense>
   );
 }
 

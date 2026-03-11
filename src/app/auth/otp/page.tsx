@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { verifyPhoneOtp } from "@/lib/auth";
 
-const OTP_LENGTH = 4;
+// TEST MODU: 6 haneli "123456" kodunu kabul et
+const OTP_LENGTH = 6;
 
 function OtpContent() {
   const router = useRouter();
@@ -49,8 +50,15 @@ function OtpContent() {
     setLoading(true);
     setError(null);
     try {
-      const { error: verifyError } = await verifyPhoneOtp(phone, code);
-      if (verifyError) throw verifyError;
+      // TEST MODU: 123456 kodu her zaman başarılı kabul edilir
+      if (code === "123456") {
+        router.push("/auth/onboard");
+        return;
+      }
+
+      // Gerçek SMS doğrulamasına geçmek istediğimizde bu satırı açacağız
+      // const { error: verifyError } = await verifyPhoneOtp(phone, code);
+      // if (verifyError) throw verifyError;
       router.push("/auth/onboard");
     } catch (err) {
       console.error(err);
@@ -111,7 +119,11 @@ function OtpContent() {
             </p>
           )}
 
-          <p className="mt-8 text-xs text-slate-500">
+          <p className="mt-2 text-xs text-amber-400">
+            Test modu: 123456 kodunu girerek devam edebilirsin.
+          </p>
+
+          <p className="mt-6 text-xs text-slate-500">
             Kodu girerek YOLDA&apos;nın kullanım şartlarını ve gizlilik
             politikasını kabul edersin.
           </p>

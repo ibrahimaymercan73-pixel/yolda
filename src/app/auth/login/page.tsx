@@ -3,14 +3,12 @@
 import { Suspense } from "react";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signInWithPhone } from "@/lib/auth";
 
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [phone, setPhone] = useState(searchParams.get("phone") ?? "");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const digitsOnly = phone.replace(/\D/g, "");
   const isValid = digitsOnly.length >= 10;
@@ -19,17 +17,9 @@ function LoginContent() {
     e.preventDefault();
     if (!isValid || loading) return;
     setLoading(true);
-    setError(null);
-    try {
-      const { error: authError } = await signInWithPhone(digitsOnly);
-      if (authError) throw authError;
-      router.push(`/auth/otp?phone=${encodeURIComponent(digitsOnly)}`);
-    } catch (err) {
-      console.error(err);
-      setError("Kod gönderilirken bir hata oluştu. Lütfen tekrar dene.");
-    } finally {
-      setLoading(false);
-    }
+    // TEST MODU: gerçek SMS yerine doğrudan OTP ekranına geç
+    router.push(`/auth/otp?phone=${encodeURIComponent(digitsOnly)}&test=1`);
+    setLoading(false);
   };
 
   return (
@@ -81,11 +71,9 @@ function LoginContent() {
               </button>
             </form>
 
-            {error && (
-              <p className="mt-3 text-sm text-red-400">
-                {error}
-              </p>
-            )}
+            <p className="mt-3 text-xs text-amber-400">
+              Test modu: SMS gönderilmiyor, bir sonraki ekranda 123456 gir.
+            </p>
 
             <div className="mt-6 flex items-center gap-3 text-xs text-slate-500">
               <div className="h-px flex-1 bg-slate-800" />

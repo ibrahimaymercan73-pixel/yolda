@@ -28,12 +28,7 @@ export default function CekiciBeklemePage() {
             `/musteri/cekici-cagir/teklifler?request_id=${requestId}`
           );
         }
-      )
-      .subscribe((status) => {
-        if (status === "SUBSCRIPTION_ERROR") {
-          setError("Teklifler gerçek zamanlı izlenemiyor.");
-        }
-      });
+      );
 
     return () => {
       supabase.removeChannel(channel);

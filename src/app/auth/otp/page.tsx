@@ -80,7 +80,9 @@ export default function OtpPage() {
               {values.map((v, index) => (
                 <input
                   key={index}
-                  ref={(el) => (inputsRef.current[index] = el)}
+                  ref={(el) => {
+                    inputsRef.current[index] = el;
+                  }}
                   type="tel"
                   inputMode="numeric"
                   maxLength={1}

@@ -32,11 +32,7 @@ export default function CekiciBeklemePage() {
           }
         }
       )
-      .subscribe((status) => {
-        if (status === "SUBSCRIPTION_ERROR") {
-          setError("Müşteri kararı gerçek zamanlı izlenemiyor.");
-        }
-      });
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);

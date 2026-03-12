@@ -71,10 +71,14 @@ export default function SoforPage() {
     setLoading(true);
     setError(null);
     try {
-      // TEST modu: 123456 kabul
-      if (code !== "123456") {
-        const { error: verifyError } = await verifyPhoneOtp(digitsOnly, code);
-        if (verifyError) throw verifyError;
+      // TEST modu: müşteri OTP ekranındaki gibi 123456 direkt kabul
+      if (code === "123456") {
+        router.replace("/sofor/anasayfa");
+        return;
+      }
+
+      const { error: verifyError } = await verifyPhoneOtp(digitsOnly, code);
+      if (verifyError) throw verifyError;
       }
 
       const { data: userData, error: userErr } = await supabase.auth.getUser();

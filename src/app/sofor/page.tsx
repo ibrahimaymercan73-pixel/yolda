@@ -79,7 +79,6 @@ export default function SoforPage() {
 
       const { error: verifyError } = await verifyPhoneOtp(digitsOnly, code);
       if (verifyError) throw verifyError;
-      }
 
       const { data: userData, error: userErr } = await supabase.auth.getUser();
       if (userErr) throw userErr;

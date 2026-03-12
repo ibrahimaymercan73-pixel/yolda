@@ -23,14 +23,8 @@ function ProgressBar({ step }: { step: Step }) {
   );
 }
 
-async function uploadDoc(userId: string, kind: string, file: File) {
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-  const path = `${userId}/${kind}_${Date.now()}_${safeName}`;
-  const { error } = await supabase.storage
-    .from("driver-documents")
-    .upload(path, file, { upsert: true });
-  if (error) throw error;
-  return path;
+function sanitizeFileName(name: string) {
+  return name.replace(/[^a-zA-Z0-9._-]/g, "_");
 }
 
 export default function SoforKayitPage() {
@@ -96,12 +90,33 @@ export default function SoforKayitPage() {
     setError(null);
     setUploading2("front");
     try {
-      const user = await getCurrentUser();
-      const path = await uploadDoc(user.id, "ehliyet_on", file);
-      setLicenseFront({ path, name: file.name });
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        router.replace("/sofor");
+        return;
+      }
+
+      const userId = session.user.id;
+      const fileName = `${userId}/${sanitizeFileName(
+        `ehliyet_on_${Date.now()}_${file.name}`
+      )}`;
+
+      const { data, error } = await supabase.storage
+        .from("driver-documents")
+        .upload(fileName, file, { upsert: true });
+
+      if (error) {
+        console.error("Upload error:", error);
+        setError(error.message);
+        return;
+      }
+
+      setLicenseFront({ path: data.path, name: file.name });
     } catch (err) {
       console.error(err);
-      setError("Ehliyet ön yüz yüklenemedi. Bucket adı: driver-documents olmalı (private).");
+      setError(err instanceof Error ? err.message : "Ehliyet ön yüz yüklenemedi.");
     } finally {
       setUploading2(null);
     }
@@ -111,12 +126,33 @@ export default function SoforKayitPage() {
     setError(null);
     setUploading2("back");
     try {
-      const user = await getCurrentUser();
-      const path = await uploadDoc(user.id, "ehliyet_arka", file);
-      setLicenseBack({ path, name: file.name });
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        router.replace("/sofor");
+        return;
+      }
+
+      const userId = session.user.id;
+      const fileName = `${userId}/${sanitizeFileName(
+        `ehliyet_arka_${Date.now()}_${file.name}`
+      )}`;
+
+      const { data, error } = await supabase.storage
+        .from("driver-documents")
+        .upload(fileName, file, { upsert: true });
+
+      if (error) {
+        console.error("Upload error:", error);
+        setError(error.message);
+        return;
+      }
+
+      setLicenseBack({ path: data.path, name: file.name });
     } catch (err) {
       console.error(err);
-      setError("Ehliyet arka yüz yüklenemedi. Bucket adı: driver-documents olmalı (private).");
+      setError(err instanceof Error ? err.message : "Ehliyet arka yüz yüklenemedi.");
     } finally {
       setUploading2(null);
     }
@@ -126,12 +162,33 @@ export default function SoforKayitPage() {
     setError(null);
     setUploading3(true);
     try {
-      const user = await getCurrentUser();
-      const path = await uploadDoc(user.id, "kimlik_on", file);
-      setIdFront({ path, name: file.name });
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        router.replace("/sofor");
+        return;
+      }
+
+      const userId = session.user.id;
+      const fileName = `${userId}/${sanitizeFileName(
+        `kimlik_on_${Date.now()}_${file.name}`
+      )}`;
+
+      const { data, error } = await supabase.storage
+        .from("driver-documents")
+        .upload(fileName, file, { upsert: true });
+
+      if (error) {
+        console.error("Upload error:", error);
+        setError(error.message);
+        return;
+      }
+
+      setIdFront({ path: data.path, name: file.name });
     } catch (err) {
       console.error(err);
-      setError("Kimlik ön yüz yüklenemedi. Bucket adı: driver-documents olmalı (private).");
+      setError(err instanceof Error ? err.message : "Kimlik ön yüz yüklenemedi.");
     } finally {
       setUploading3(false);
     }

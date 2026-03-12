@@ -521,6 +521,17 @@ export default function SoforKayitPage() {
         </div>
 
         {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
+
+        <p className="mt-6 text-center text-sm text-[var(--text-dim)]">
+          Zaten hesabın var mı?{" "}
+          <button
+            type="button"
+            className="text-[14px] font-medium text-[var(--text-muted)] hover:underline"
+            onClick={() => router.push("/sofor")}
+          >
+            Giriş Yap
+          </button>
+        </p>
       </main>
     </div>
   );

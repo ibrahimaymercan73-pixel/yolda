@@ -177,6 +177,17 @@ export default function SoforPage() {
             <p className="text-xs font-semibold text-[var(--green)]">
               Test modu: 123456 kodunu girerek devam edebilirsin.
             </p>
+
+            <p className="pt-2 text-center text-sm text-[var(--text-dim)]">
+              Şoför hesabın yok mu?{" "}
+              <button
+                type="button"
+                className="text-[14px] font-medium text-[var(--text-muted)] hover:underline"
+                onClick={() => router.push("/sofor/kayit")}
+              >
+                Kayıt Ol
+              </button>
+            </p>
           </form>
         ) : (
           <div className="mt-8">

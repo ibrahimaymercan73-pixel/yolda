@@ -1,19 +1,128 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
+import { getCurrentUser } from "@/lib/auth";
 
 export default function SoforAnasayfaPage() {
   const router = useRouter();
   const [online, setOnline] = useState(false);
+  const [savingOnline, setSavingOnline] = useState(false);
+  const [requestsLoading, setRequestsLoading] = useState(true);
+  const [requests, setRequests] = useState<
+    Array<{
+      id: string;
+      pickup_address: string | null;
+      dropoff_address: string | null;
+      price: number | null;
+      status: string | null;
+      created_at: string | null;
+    }>
+  >([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!online) return;
-    const timer = setTimeout(() => {
-      router.push("/sofor/talep");
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, [online, router]);
+    let cancelled = false;
+    async function bootstrap() {
+      try {
+        const user = await getCurrentUser();
+        const { data: roleRow, error: roleErr } = await supabase
+          .from("users")
+          .select("role")
+          .eq("id", user.id)
+          .single();
+        if (roleErr) throw roleErr;
+        if (roleRow?.role !== "sofor") {
+          router.replace("/sofor");
+          return;
+        }
+
+        const { data: profile, error: pErr } = await supabase
+          .from("driver_profiles")
+          .select("is_online")
+          .eq("user_id", user.id)
+          .limit(1);
+        if (!cancelled && !pErr) {
+          setOnline(Boolean(profile?.[0]?.is_online));
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    bootstrap();
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
+  const fetchRequests = async () => {
+    setRequestsLoading(true);
+    setError(null);
+    try {
+      const { data, error: rErr } = await supabase
+        .from("ride_requests")
+        .select("id,pickup_address,dropoff_address,price,status,created_at")
+        .eq("status", "bekliyor")
+        .order("created_at", { ascending: false });
+      if (rErr) throw rErr;
+      setRequests((data ?? []) as any);
+    } catch (err) {
+      console.error(err);
+      setError("Talepler yüklenemedi. Lütfen tekrar dene.");
+    } finally {
+      setRequestsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void fetchRequests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleToggleOnline = async () => {
+    if (savingOnline) return;
+    setSavingOnline(true);
+    setError(null);
+    try {
+      const user = await getCurrentUser();
+      const next = !online;
+      const { error: updErr } = await supabase
+        .from("driver_profiles")
+        .update({ is_online: next })
+        .eq("user_id", user.id);
+      if (updErr) throw updErr;
+      setOnline(next);
+    } catch (err) {
+      console.error(err);
+      setError("Durum güncellenemedi. Lütfen tekrar dene.");
+    } finally {
+      setSavingOnline(false);
+    }
+  };
+
+  const handleAccept = async (requestId: string) => {
+    setError(null);
+    try {
+      const user = await getCurrentUser();
+      const { error: updErr } = await supabase
+        .from("ride_requests")
+        .update({ status: "eslesti", driver_id: user.id })
+        .eq("id", requestId)
+        .eq("status", "bekliyor");
+      if (updErr) throw updErr;
+      router.push(`/sofor/navigasyon?request_id=${requestId}`);
+    } catch (err) {
+      console.error(err);
+      setError("Talep kabul edilemedi. Lütfen tekrar dene.");
+    }
+  };
+
+  const subtitle = useMemo(() => {
+    if (requestsLoading) return "Talepler yükleniyor...";
+    if (requests.length === 0) return "Şu an bekleyen talep yok.";
+    return `${requests.length} yeni talep var`;
+  }, [requests.length, requestsLoading]);
 
   return (
     <div className="min-h-screen bg-[var(--bg)]">
@@ -25,8 +134,11 @@ export default function SoforAnasayfaPage() {
           className="mt-1 text-[28px] font-extrabold text-[var(--text)]"
           style={{ letterSpacing: "-0.8px" }}
         >
-          Bugünkü Özet
+          Şoför Ana Sayfa
         </h1>
+        <p className="mt-1 text-sm font-semibold text-[var(--green)]">
+          {subtitle}
+        </p>
 
         <section className="mt-6 space-y-4">
           <div className="rounded-[16px] border border-[var(--border)] bg-[#111] px-4 py-4 text-white">
@@ -75,7 +187,8 @@ export default function SoforAnasayfaPage() {
             </div>
             <button
               type="button"
-              onClick={() => setOnline((prev) => !prev)}
+              onClick={handleToggleOnline}
+              disabled={savingOnline}
               className={`relative h-7 w-12 rounded-full border transition ${
                 online
                   ? "border-[var(--green)] bg-[var(--green)]"
@@ -90,33 +203,63 @@ export default function SoforAnasayfaPage() {
             </button>
           </div>
 
-          {online ? (
-            <div className="rounded-[16px] border border-[var(--green)]/40 bg-[var(--green)]/10 p-4 text-sm">
-              <p className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--green)]">
-                ÇEVRİMİÇİSİN
-              </p>
-              <p className="mt-2 text-[var(--text)]">
-                Yeni iş talepleri için görünürsün. Sana en yakın ve puanına
-                uygun müşteri talepleri gösterilecek.
-              </p>
-              <p className="mt-2 text-xs text-[var(--green)]">
-                Kısa süre içinde bir iş talebi simüle edilecek.
-              </p>
-            </div>
-          ) : (
-            <div className="rounded-[16px] border border-[var(--border)] bg-[var(--bg-card)] p-4 text-sm">
+          <div className="rounded-[16px] border border-[var(--border)] bg-[var(--bg-card)] p-4">
+            <div className="flex items-center justify-between gap-3">
               <p className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
-                ÇEVRİMDIŞISIN
+                Gelen iş talepleri
               </p>
-              <p className="mt-2 flex items-center gap-2 text-[var(--text-dim)]">
-                <span className="text-2xl">💤</span>
-                <span>
-                  Rahat bir mola veriyorsun. Yeni iş talepleri şu anda sana
-                  gösterilmeyecek.
-                </span>
-              </p>
+              <button
+                type="button"
+                onClick={() => void fetchRequests()}
+                className="rounded-[14px] bg-[var(--bg-soft)] px-3 py-2 text-xs font-bold text-[var(--text)]"
+              >
+                Yenile
+              </button>
             </div>
-          )}
+
+            {requestsLoading && (
+              <div className="mt-4 flex items-center gap-3 text-sm font-semibold text-[var(--text-dim)]">
+                <span className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--border)] border-t-[#111]" />
+                Talepler yükleniyor...
+              </div>
+            )}
+
+            {!requestsLoading && requests.length === 0 && (
+              <p className="mt-4 text-sm font-semibold text-[var(--text-dim)]">
+                Şu an bekleyen talep yok.
+              </p>
+            )}
+
+            {!requestsLoading && requests.length > 0 && (
+              <div className="mt-4 space-y-3">
+                {requests.map((r) => (
+                  <div
+                    key={r.id}
+                    className="rounded-[14px] bg-[var(--bg-soft)] p-4"
+                  >
+                    <p className="text-sm font-bold text-[var(--text)]">
+                      {r.pickup_address ?? "-"} → {r.dropoff_address ?? "-"}
+                    </p>
+                    <p className="mt-1 text-xs text-[var(--text-dim)]">
+                      Ücret:{" "}
+                      <span className="font-bold text-[var(--text)]">
+                        ₺{r.price ?? "-"}
+                      </span>
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => void handleAccept(r.id)}
+                      className="mt-3 w-full rounded-[14px] bg-[var(--green)] px-4 py-3 text-sm font-bold text-white"
+                    >
+                      Kabul Et
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {error && <p className="text-sm text-red-500">{error}</p>}
         </section>
       </main>
     </div>

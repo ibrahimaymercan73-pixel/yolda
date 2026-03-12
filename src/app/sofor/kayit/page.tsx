@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { getCurrentUser } from "@/lib/auth";
@@ -23,15 +23,12 @@ function ProgressBar({ step }: { step: Step }) {
   );
 }
 
-function sanitizeFileName(name: string) {
-  return name.replace(/[^a-zA-Z0-9._-]/g, "_");
-}
-
 export default function SoforKayitPage() {
   const router = useRouter();
   const [step, setStep] = useState<Step>(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sessionReady, setSessionReady] = useState(false);
 
   // Step 1
   const [fullName, setFullName] = useState("");
@@ -86,6 +83,37 @@ export default function SoforKayitPage() {
   const next = () => setStep((s) => (Math.min(4, s + 1) as Step));
   const back = () => setStep((s) => (Math.max(1, s - 1) as Step));
 
+  useEffect(() => {
+    let cancelled = false;
+    async function guard() {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        router.replace("/sofor");
+        return;
+      }
+      if (!cancelled) setSessionReady(true);
+    }
+    void guard();
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
+  if (!sessionReady) {
+    return (
+      <div className="min-h-screen bg-[var(--bg)]">
+        <main className="mx-auto flex min-h-screen w-full max-w-[430px] items-center justify-center px-5 py-6">
+          <div className="flex items-center gap-3 text-sm font-semibold text-[var(--text-dim)]">
+            <span className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--border)] border-t-[#111]" />
+            Yükleniyor...
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   const handleUploadLicenseFront = async (file: File) => {
     setError(null);
     setUploading2("front");
@@ -97,15 +125,11 @@ export default function SoforKayitPage() {
         router.replace("/sofor");
         return;
       }
-
       const userId = session.user.id;
-      const fileName = `${userId}/${sanitizeFileName(
-        `ehliyet_on_${Date.now()}_${file.name}`
-      )}`;
-
+      const fileName = "ehliyet-on.jpg";
       const { data, error } = await supabase.storage
         .from("driver-documents")
-        .upload(fileName, file, { upsert: true });
+        .upload(`${userId}/${fileName}`, file, { upsert: true });
 
       if (error) {
         console.error("Upload error:", error);
@@ -133,15 +157,11 @@ export default function SoforKayitPage() {
         router.replace("/sofor");
         return;
       }
-
       const userId = session.user.id;
-      const fileName = `${userId}/${sanitizeFileName(
-        `ehliyet_arka_${Date.now()}_${file.name}`
-      )}`;
-
+      const fileName = "ehliyet-arka.jpg";
       const { data, error } = await supabase.storage
         .from("driver-documents")
-        .upload(fileName, file, { upsert: true });
+        .upload(`${userId}/${fileName}`, file, { upsert: true });
 
       if (error) {
         console.error("Upload error:", error);
@@ -169,15 +189,11 @@ export default function SoforKayitPage() {
         router.replace("/sofor");
         return;
       }
-
       const userId = session.user.id;
-      const fileName = `${userId}/${sanitizeFileName(
-        `kimlik_on_${Date.now()}_${file.name}`
-      )}`;
-
+      const fileName = "kimlik-on.jpg";
       const { data, error } = await supabase.storage
         .from("driver-documents")
-        .upload(fileName, file, { upsert: true });
+        .upload(`${userId}/${fileName}`, file, { upsert: true });
 
       if (error) {
         console.error("Upload error:", error);

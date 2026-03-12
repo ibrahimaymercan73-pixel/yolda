@@ -84,35 +84,23 @@ export default function SoforPage() {
 
       const { data: roleRow, error: roleErr } = await supabase
         .from("users")
-        .select("role")
+        .select("id, role")
         .eq("id", user.id)
         .single();
-      // Yeni kullanıcıda users satırı yoksa, kayıt akışına yönlendireceğiz.
-      if (roleErr && roleErr.code !== "PGRST116") throw roleErr;
 
+      // Kayıt akışı: users tablosunda satır var mı?
+      if (roleErr && roleErr.code === "PGRST116") {
+        router.replace("/sofor/kayit");
+        return;
+      }
+      if (roleErr) throw roleErr;
+
+      // Opsiyonel: mevcut rol sofor değilse engelle
       if (roleRow?.role && roleRow.role !== "sofor") {
         await supabase.auth.signOut();
         setError("Bu hesap şoför hesabı değil.");
         setStep("phone");
         setValues(Array(OTP_LENGTH).fill(""));
-        return;
-      }
-
-      // Kayıt/onay durumuna göre yönlendir
-      const { data: prof, error: pErr } = await supabase
-        .from("driver_profiles")
-        .select("is_approved")
-        .eq("user_id", user.id)
-        .limit(1);
-      if (pErr) throw pErr;
-
-      if (!prof || prof.length === 0) {
-        router.replace("/sofor/kayit");
-        return;
-      }
-
-      if (!prof[0]?.is_approved) {
-        router.replace("/sofor/onay-bekliyor");
         return;
       }
 

@@ -27,7 +27,7 @@ function CekiciBeklemeContent() {
           filter: `id=eq.${offerId}`,
         },
         (payload) => {
-          const status = (payload.new as any).status;
+          const status = (payload.new as { status?: string }).status;
           if (status === "kabul") {
             router.push("/cekici/aktif-is");
           }
@@ -41,54 +41,63 @@ function CekiciBeklemeContent() {
   }, [offerId, router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <main className="flex min-h-screen w-full max-w-[430px] flex-col bg-background px-5 py-6 text-foreground">
-        <header className="mb-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-success">
-            Çekici Paneli
-          </p>
-          <h1 className="text-xl font-semibold">Müşteri Karar Veriyor</h1>
-        </header>
+    <div className="min-h-screen bg-[var(--bg)]">
+      <main className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col px-5 py-6">
+        <button
+          type="button"
+          onClick={() => router.push("/cekici/anasayfa")}
+          className="mb-4 flex h-9 w-9 items-center justify-center rounded-[12px] bg-[var(--bg-soft)] text-[var(--text)]"
+        >
+          ←
+        </button>
+        <h1
+          className="text-[28px] font-extrabold text-[var(--text)]"
+          style={{ letterSpacing: "-0.8px" }}
+        >
+          Müşteri Karar Veriyor
+        </h1>
 
-        <section className="flex flex-1 flex-col justify-between">
+        <section className="mt-6 flex flex-1 flex-col">
           <div className="space-y-5">
-            <div className="rounded-2xl bg-slate-950 px-4 py-4 text-xs">
-              <p className="text-sm font-medium text-slate-100">
+            <div className="rounded-[16px] border border-[var(--border)] bg-[var(--bg-card)] p-4">
+              <p className="text-sm font-bold text-[var(--text)]">
                 ⏳ Müşteri Karar Veriyor
               </p>
-              <p className="mt-2 text-slate-400">
+              <p className="mt-2 text-xs text-[var(--text-dim)]">
                 Fiyat teklifin müşteriye iletildi. Diğer çekici teklifleriyle
                 birlikte listeleniyor.
               </p>
 
-              <div className="mt-3 rounded-2xl bg-slate-900 px-3 py-2 text-sm">
+              <div className="mt-3 rounded-[14px] bg-[var(--bg-soft)] p-3 text-sm font-semibold text-[var(--text)]">
                 Gönderdiğin fiyat:{" "}
-                <span className="font-semibold text-emerald-400">
-                  ₺{price}
-                </span>
+                <span className="text-[var(--green)]">₺{price}</span>
               </div>
 
-              <p className="mt-3 text-[11px] text-slate-400">
+              <p className="mt-3 text-xs text-[var(--text-dim)]">
                 İpucu: Yüksek puan + uygun fiyat = daha çok seçilme.
               </p>
             </div>
 
             <div className="flex flex-col items-center gap-3">
               <div className="flex items-center justify-center gap-2">
-                <span className="h-1.5 w-1.5 animate-dot rounded-full bg-slate-100" />
-                <span className="h-1.5 w-1.5 animate-dot rounded-full bg-slate-100 [animation-delay:120ms]" />
-                <span className="h-1.5 w-1.5 animate-dot rounded-full bg-slate-100 [animation-delay:240ms]" />
+                <span className="h-2 w-2 animate-dot rounded-full bg-[var(--text-muted)]" />
+                <span
+                  className="h-2 w-2 animate-dot rounded-full bg-[var(--text-muted)]"
+                  style={{ animationDelay: "120ms" }}
+                />
+                <span
+                  className="h-2 w-2 animate-dot rounded-full bg-[var(--text-muted)]"
+                  style={{ animationDelay: "240ms" }}
+                />
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-[var(--text-dim)]">
                 Müşteri genelde 1-2 dakika içinde seçim yapar.
               </p>
             </div>
           </div>
 
           {error && (
-            <p className="mt-4 text-center text-xs text-red-400">
-              {error}
-            </p>
+            <p className="mt-4 text-center text-sm text-red-500">{error}</p>
           )}
         </section>
       </main>
@@ -100,7 +109,7 @@ export default function CekiciBeklemePage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-background text-sm text-slate-400">
+        <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] text-sm text-[var(--text-dim)]">
           Müşteri kararı bekleniyor...
         </div>
       }
@@ -109,4 +118,3 @@ export default function CekiciBeklemePage() {
     </Suspense>
   );
 }
-

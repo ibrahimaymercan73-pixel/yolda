@@ -32,12 +32,20 @@ const MODELS = [
 ] as const;
 
 const COLORS: { key: ColorKey; label: string; display: string }[] = [
-  { key: "beyaz", label: "Beyaz", display: "⚪ Beyaz" },
-  { key: "siyah", label: "Siyah", display: "⚫ Siyah" },
-  { key: "gri", label: "Gri", display: "🩶 Gri" },
-  { key: "kirmizi", label: "Kırmızı", display: "🔴 Kırmızı" },
-  { key: "mavi", label: "Mavi", display: "🔵 Mavi" },
+  { key: "beyaz", label: "Beyaz", display: "⚪" },
+  { key: "siyah", label: "Siyah", display: "⚫" },
+  { key: "gri", label: "Gri", display: "🩶" },
+  { key: "kirmizi", label: "Kırmızı", display: "🔴" },
+  { key: "mavi", label: "Mavi", display: "🔵" },
 ];
+
+const COLOR_LABELS: Record<ColorKey, string> = {
+  beyaz: "Beyaz",
+  siyah: "Siyah",
+  gri: "Gri",
+  kirmizi: "Kırmızı",
+  mavi: "Mavi",
+};
 
 export default function OnboardPage() {
   const router = useRouter();
@@ -117,152 +125,182 @@ export default function OnboardPage() {
 
   const previewTextBrand = brand || "Marka";
   const previewTextModel = model || "Model";
-  const previewTextColor =
-    COLORS.find((c) => c.key === color)?.label || "Renk seçilmedi";
+  const previewTextColor = color ? COLOR_LABELS[color] : "Renk seçilmedi";
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <main className="flex min-h-screen w-full max-w-[430px] flex-col bg-background px-5 py-6 text-foreground">
-        <header className="mb-6 rounded-2xl bg-[#FF4500] px-4 py-3 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.28em]">
-                Arabanı Kaydet
-              </p>
-              <p className="mt-1 text-xs opacity-90">
-                Her seferinde tekrar girme.
-              </p>
-            </div>
-            <span className="text-2xl">🚗</span>
-          </div>
-        </header>
+    <div className="min-h-screen bg-[var(--bg)]">
+      <main className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col px-5 py-6">
+        <div className="mb-2 text-3xl">🚗</div>
+        <h1
+          className="text-[28px] font-extrabold text-[var(--text)]"
+          style={{ letterSpacing: "-0.8px" }}
+        >
+          Arabanı Kaydet
+        </h1>
+        <p className="mt-1 text-sm text-[var(--text-dim)]">
+          Her seferinde tekrar girme.
+        </p>
 
-        <section className="flex flex-1 flex-col justify-between">
-          <div className="space-y-5">
-            <div className="grid grid-cols-1 gap-4">
-              <label className="text-sm font-medium">
+        <div className="mt-8 space-y-5">
+          <div className="grid grid-cols-2 gap-3">
+            <label>
+              <span className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
                 Marka
-                <select
-                  className="mt-2 w-full rounded-2xl border border-slate-800 bg-slate-950 px-3 py-3 text-sm outline-none"
-                  value={brand}
-                  onChange={(e) => setBrand(e.target.value)}
-                >
-                  <option value="">Seçiniz</option>
-                  {BRANDS.map((b) => (
-                    <option key={b} value={b}>
-                      {b}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="text-sm font-medium">
+              </span>
+              <select
+                className="mt-2 w-full rounded-[14px] border border-transparent bg-[var(--bg-soft)] px-4 py-[15px] text-sm font-semibold text-[var(--text)] outline-none"
+                value={brand}
+                onChange={(e) => setBrand(e.target.value)}
+              >
+                <option value="">Seçiniz</option>
+                {BRANDS.map((b) => (
+                  <option key={b} value={b}>
+                    {b}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
                 Model
-                <select
-                  className="mt-2 w-full rounded-2xl border border-slate-800 bg-slate-950 px-3 py-3 text-sm outline-none"
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                >
-                  <option value="">Seçiniz</option>
-                  {MODELS.map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
+              </span>
+              <select
+                className="mt-2 w-full rounded-[14px] border border-transparent bg-[var(--bg-soft)] px-4 py-[15px] text-sm font-semibold text-[var(--text)] outline-none"
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
+              >
+                <option value="">Seçiniz</option>
+                {MODELS.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
 
-            <div>
-              <p className="text-sm font-medium">Renk</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {COLORS.map((c) => {
-                  const active = color === c.key;
-                  return (
-                    <button
-                      key={c.key}
-                      type="button"
-                      onClick={() => setColor(c.key)}
-                      className={`rounded-2xl border px-3 py-1.5 text-xs font-medium transition ${
-                        active
-                          ? "border-[#FF4500] bg-[#FF4500]/10 text-slate-50"
-                          : "border-slate-700 bg-slate-900 text-slate-300"
-                      }`}
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
+              Renk
+            </span>
+            <div className="mt-3 flex gap-4">
+              {COLORS.map((c) => {
+                const active = color === c.key;
+                return (
+                  <button
+                    key={c.key}
+                    type="button"
+                    onClick={() => setColor(c.key)}
+                    className={`flex flex-col items-center gap-1 text-xs font-medium text-[var(--text)] ${
+                      active ? "ring-2 ring-[#111] ring-offset-2 rounded-full" : ""
+                    }`}
+                    style={
+                      active
+                        ? { borderRadius: "9999px", padding: 2 }
+                        : undefined
+                    }
+                  >
+                    <span
+                      className="flex h-10 w-10 items-center justify-center rounded-full text-xl"
+                      style={{
+                        backgroundColor:
+                          c.key === "beyaz"
+                            ? "#f5f5f5"
+                            : c.key === "siyah"
+                              ? "#111"
+                              : c.key === "gri"
+                                ? "#9ca3af"
+                                : c.key === "kirmizi"
+                                  ? "#ef4444"
+                                  : "#3b82f6",
+                        border:
+                          c.key === "beyaz"
+                            ? "1px solid var(--border)"
+                            : "none",
+                      }}
                     >
-                      {c.display}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium">
-                Plaka
-                <div className="mt-2 flex items-center justify-center">
-                  <input
-                    type="text"
-                    maxLength={10}
-                    value={plate}
-                    onChange={(e) => setPlate(e.target.value)}
-                    className="w-40 rounded-lg border border-yellow-400 bg-gradient-to-b from-yellow-300 to-yellow-500 px-3 py-2 text-center text-lg font-semibold tracking-[0.2em] text-slate-900 outline-none shadow-sm shadow-yellow-500/60"
-                    placeholder="34 ABC 123"
-                  />
-                </div>
-              </label>
-            </div>
-
-            <div className="mt-4 rounded-2xl bg-slate-900 px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                Canlı Önizleme
-              </p>
-              <div className="mt-3 space-y-2">
-                <p className="text-sm">
-                  🚗 {previewTextBrand} {previewTextModel} · {previewTextColor}
-                </p>
-                <div className="inline-flex items-center justify-center rounded-md border border-yellow-500 bg-gradient-to-b from-yellow-300 to-yellow-500 px-4 py-1 text-sm font-semibold tracking-[0.25em] text-slate-900">
-                  {normalizedPlate || "34 ABC 123"}
-                </div>
-              </div>
+                      {c.key === "siyah" ? (
+                        <span className="text-white text-lg">🚗</span>
+                      ) : (
+                        c.display
+                      )}
+                    </span>
+                    {COLOR_LABELS[c.key]}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          <div className="mt-6 space-y-3">
-            <button
-              type="button"
-              disabled={!canSubmit || loading}
-              onClick={handleSave}
-              className={`w-full rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-                canSubmit && !loading
-                  ? "bg-[#FF4500] text-white shadow-sm shadow-orange-500/40"
-                  : "bg-slate-800 text-slate-500"
-              }`}
-            >
-              {loading ? "Kaydediliyor..." : "Arabamı Kaydet"}
-            </button>
-
-            <button
-              type="button"
-              onClick={handleSkip}
-              className="w-full rounded-2xl border border-transparent px-4 py-3 text-sm font-medium text-slate-400 underline underline-offset-4"
-            >
-              Şimdi Değil, Atla
-            </button>
-
-            {error && (
-              <p className="text-center text-sm text-red-400">{error}</p>
-            )}
-
-            {hasExisting && !error && (
-              <p className="pt-1 text-center text-[11px] text-slate-500">
-                Garajında kayıtlı araçların var, bu adımı daha sonra da
-                tamamlayabilirsin.
-              </p>
-            )}
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
+              Plaka
+            </span>
+            <div className="mt-2 flex justify-center">
+              <input
+                type="text"
+                maxLength={10}
+                value={plate}
+                onChange={(e) => setPlate(e.target.value)}
+                className="w-44 rounded-[14px] border-[1.5px] px-4 py-3 text-center text-base font-bold tracking-[4px] outline-none"
+                style={{
+                  backgroundColor: "var(--yellow-bg)",
+                  borderColor: "var(--yellow-border)",
+                  color: "#92400E",
+                }}
+                placeholder="34 ABC 123"
+              />
+            </div>
           </div>
-        </section>
+
+          <div className="rounded-[16px] border border-[var(--border)] bg-[var(--bg-card)] p-[13px]">
+            <span className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
+              Önizleme
+            </span>
+            <p className="mt-2 text-sm font-semibold text-[var(--text)]">
+              🚗 {previewTextBrand} {previewTextModel} · {previewTextColor}
+            </p>
+            <div
+              className="mt-2 inline-flex items-center rounded-md px-3 py-1 text-sm font-bold"
+              style={{
+                backgroundColor: "var(--yellow)",
+                color: "#92400E",
+              }}
+            >
+              {normalizedPlate || "34 ABC 123"}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 space-y-3">
+          <button
+            type="button"
+            disabled={!canSubmit || loading}
+            onClick={handleSave}
+            className="w-full rounded-[14px] bg-[#111] px-4 py-4 text-[15px] font-bold text-white disabled:opacity-50"
+          >
+            {loading ? "Kaydediliyor..." : "Kaydet"}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSkip}
+            className="w-full bg-transparent py-2 text-[14px] font-medium text-[var(--text-muted)]"
+          >
+            Şimdi değil, atla
+          </button>
+        </div>
+
+        {error && (
+          <p className="mt-4 text-center text-sm text-red-500">{error}</p>
+        )}
+        {hasExisting && !error && (
+          <p className="mt-2 text-center text-xs text-[var(--text-dim)]">
+            Garajında kayıtlı araçların var, bu adımı daha sonra da
+            tamamlayabilirsin.
+          </p>
+        )}
       </main>
     </div>
   );
 }
-

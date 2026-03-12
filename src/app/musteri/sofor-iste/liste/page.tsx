@@ -71,14 +71,13 @@ export default function SoforListePage() {
     async function fetchActiveVehicle() {
       try {
         const user = await getCurrentUser();
-        const { data, error: vError } = await supabase
+        const { data } = await supabase
           .from("vehicles")
           .select("*")
           .eq("user_id", user.id)
           .eq("is_active", true)
-          .single();
-        if (vError) return;
-        if (!cancelled) setVehicle(data as VehicleRow);
+          .limit(1);
+        if (!cancelled && data?.[0]) setVehicle(data[0] as VehicleRow);
       } catch (err) {
         console.error(err);
       }
@@ -98,7 +97,6 @@ export default function SoforListePage() {
       const user = await getCurrentUser();
       const vehicleId = await getActiveVehicleId();
 
-      // Şimdilik sabit adres / koordinatlar
       const pickup_address = "Bağdat Caddesi, Kadıköy";
       const dropoff_address = "Moda Sahili";
       const pickup_lat = 40.987;
@@ -107,9 +105,7 @@ export default function SoforListePage() {
       const dropoff_lng = 29.029;
 
       const chosenDriver = MOCK_DRIVERS.find((d) => d.id === selectedId)!;
-      const priceNumber = Number(
-        chosenDriver.price.replace(/[^\d]/g, "")
-      );
+      const priceNumber = Number(chosenDriver.price.replace(/[^\d]/g, ""));
 
       const { data, error: insertError } = await supabase
         .from("ride_requests")
@@ -125,7 +121,7 @@ export default function SoforListePage() {
           type: "hemen",
           scheduled_at: null,
           status: "bekliyor",
-          driver_id: chosenDriver.id, // gerçek driver id ile değiştirilebilir
+          driver_id: chosenDriver.id,
           price: priceNumber,
         })
         .select("id")
@@ -145,31 +141,33 @@ export default function SoforListePage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <main className="flex min-h-screen w-full max-w-[430px] flex-col bg-background px-5 py-6 text-foreground">
-        <header className="mb-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">
-                Şoför İste
-              </p>
-              <h1 className="text-xl font-semibold">Yakın Şoförler</h1>
-            </div>
-            <p className="text-[11px] font-semibold text-emerald-400">
-              3 müsait şoför bulundu
-            </p>
-          </div>
-        </header>
+    <div className="min-h-screen bg-[var(--bg)]">
+      <main className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col px-5 py-6">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="mb-4 flex h-9 w-9 items-center justify-center rounded-[12px] bg-[var(--bg-soft)] text-[var(--text)]"
+        >
+          ←
+        </button>
+        <h1
+          className="text-[28px] font-extrabold text-[var(--text)]"
+          style={{ letterSpacing: "-0.8px" }}
+        >
+          Yakın Şoförler
+        </h1>
+        <p className="mt-1 text-sm font-semibold text-[var(--green)]">
+          3 müsait şoför bulundu
+        </p>
 
-        <section className="flex flex-1 flex-col justify-between">
+        <section className="mt-6 flex flex-1 flex-col">
           <div className="space-y-4">
-            {/* Sahte harita */}
-            <div className="relative h-40 overflow-hidden rounded-2xl bg-slate-900">
+            <div className="relative h-40 overflow-hidden rounded-[16px] bg-[var(--bg-soft)]">
               <div className="absolute inset-0 opacity-30">
-                <div className="absolute left-6 top-0 h-full w-px bg-slate-700" />
-                <div className="absolute right-10 top-0 h-full w-px bg-slate-700" />
-                <div className="absolute left-0 top-6 h-px w-full bg-slate-700" />
-                <div className="absolute left-0 top-20 h-px w-full bg-slate-700" />
+                <div className="absolute left-6 top-0 h-full w-px bg-[var(--border)]" />
+                <div className="absolute right-10 top-0 h-full w-px bg-[var(--border)]" />
+                <div className="absolute left-0 top-6 h-px w-full bg-[var(--border)]" />
+                <div className="absolute left-0 top-20 h-px w-full bg-[var(--border)]" />
               </div>
               <div className="relative h-full w-full">
                 <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-xl">
@@ -179,28 +177,25 @@ export default function SoforListePage() {
                 <span className="absolute right-8 bottom-10 text-lg">🚶</span>
                 <span className="absolute right-16 top-5 text-lg">🚶</span>
               </div>
-              <p className="absolute bottom-2 right-3 rounded-full bg-black/40 px-3 py-1 text-[10px] text-slate-200">
+              <p className="absolute bottom-2 right-3 rounded-full bg-black/10 px-3 py-1 text-[10px] text-[var(--text-dim)]">
                 Şoförler kendi yöntemleriyle gelir
               </p>
             </div>
 
-            {/* Aktif araç bandı */}
             {vehicle && (
-              <div className="rounded-2xl bg-[#FF4500]/15 px-4 py-3 text-xs text-[#FFD7C2]">
-                <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em]">
-                  <span>🚗</span>
-                  <span>Aktif Araç</span>
+              <div className="rounded-[16px] border border-[var(--border)] bg-[var(--bg-card)] p-4">
+                <p className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
+                  🚗 Aktif Araç
                 </p>
-                <p className="mt-1 text-sm text-white">
+                <p className="mt-1 text-sm font-semibold text-[var(--text)]">
                   {vehicle.brand} {vehicle.model} • {vehicle.color ?? "-"}
                 </p>
-                <p className="mt-1 text-[11px] text-orange-100">
+                <p className="mt-1 text-xs text-[var(--text-dim)]">
                   Şoför bu aracı sürecek.
                 </p>
               </div>
             )}
 
-            {/* Şoför listesi */}
             <div className="space-y-3">
               {MOCK_DRIVERS.map((driver) => {
                 const active = selectedId === driver.id;
@@ -209,32 +204,32 @@ export default function SoforListePage() {
                     key={driver.id}
                     type="button"
                     onClick={() => setSelectedId(driver.id)}
-                    className={`w-full rounded-2xl border px-4 py-3 text-left text-sm transition ${
+                    className={`w-full rounded-[16px] border p-4 text-left text-sm transition ${
                       active
-                        ? "border-[#FF4500] bg-slate-900"
-                        : "border-slate-800 bg-slate-950"
+                        ? "border-[#111] bg-[var(--bg-card)] ring-2 ring-[#111]"
+                        : "border-[var(--border)] bg-[var(--bg-card)]"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-start gap-3">
                         <span className="mt-1 text-2xl">{driver.emoji}</span>
                         <div>
-                          <p className="text-sm font-semibold">
+                          <p className="font-bold text-[var(--text)]">
                             {driver.name}{" "}
-                            <span className="text-xs text-yellow-300">
+                            <span className="text-xs text-[var(--text-dim)]">
                               ★ {driver.rating.toFixed(1)}
                             </span>
                           </p>
-                          <p className="mt-1 text-[11px] text-slate-400">
+                          <p className="mt-1 text-xs text-[var(--text-dim)]">
                             {driver.region} • {driver.trips} sefer
                           </p>
                         </div>
                       </div>
                       <div className="text-right text-xs">
-                        <p className="font-semibold text-slate-50">
+                        <p className="font-bold text-[var(--text)]">
                           {driver.price}
                         </p>
-                        <p className="mt-1 text-[11px] text-emerald-400">
+                        <p className="mt-1 text-xs text-[var(--green)]">
                           {driver.eta} tahmini
                         </p>
                       </div>
@@ -249,20 +244,15 @@ export default function SoforListePage() {
             type="button"
             disabled={!selectedId || loading}
             onClick={handleContinue}
-            className={`mt-6 w-full rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-              selectedId && !loading
-                ? "bg-primary text-primary-foreground shadow-sm shadow-orange-500/40"
-                : "bg-slate-800 text-slate-500"
-            }`}
+            className="mt-6 w-full rounded-[14px] bg-[#111] px-4 py-4 text-[15px] font-bold text-white disabled:opacity-50"
           >
             {loading ? "Gönderiliyor..." : "Devam Et"}
           </button>
           {error && (
-            <p className="mt-3 text-sm text-red-400">{error}</p>
+            <p className="mt-3 text-sm text-red-500">{error}</p>
           )}
         </section>
       </main>
     </div>
   );
 }
-

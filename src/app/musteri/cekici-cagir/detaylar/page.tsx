@@ -57,7 +57,8 @@ export default function CekiciDetaylarPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const hasEnoughForSummary = !!vehicleType || !!breakdown || !!transmission || !!driveType;
+  const hasEnoughForSummary =
+    !!vehicleType || !!breakdown || !!transmission || !!driveType;
 
   const summaryTags = useMemo(() => {
     const tags: string[] = [];
@@ -66,9 +67,7 @@ export default function CekiciDetaylarPage() {
     const bt = BREAKDOWN_OPTIONS.find((b) => b.key === breakdown);
     if (bt) tags.push(`${bt.icon} ${bt.label}`);
     if (transmission) {
-      tags.push(
-        transmission === "manuel" ? "🕹️ Manuel" : "🤖 Otomatik"
-      );
+      tags.push(transmission === "manuel" ? "🕹️ Manuel" : "🤖 Otomatik");
     }
     if (driveType) {
       tags.push(driveType === "2wd" ? "2WD Normal" : "4x4 / AWD");
@@ -132,23 +131,31 @@ export default function CekiciDetaylarPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <main className="flex min-h-screen w-full max-w-[430px] flex-col bg-background px-5 py-6 text-foreground">
-        <header className="mb-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">
-            Çekici Çağır
-          </p>
-          <h1 className="text-xl font-semibold">Araç Detayları</h1>
-          <p className="mt-1 text-xs text-slate-400">
-            Doğru ekipman gelsin, fiyat netleşsin.
-          </p>
-        </header>
+    <div className="min-h-screen bg-[var(--bg)]">
+      <main className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col px-5 py-6">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="mb-4 flex h-9 w-9 items-center justify-center rounded-[12px] bg-[var(--bg-soft)] text-[var(--text)]"
+        >
+          ←
+        </button>
+        <h1
+          className="text-[28px] font-extrabold text-[var(--text)]"
+          style={{ letterSpacing: "-0.8px" }}
+        >
+          Araç Detayları
+        </h1>
+        <p className="mt-1 text-sm text-[var(--text-dim)]">
+          Doğru ekipman gelsin, fiyat netleşsin.
+        </p>
 
-        <section className="flex flex-1 flex-col justify-between">
+        <section className="mt-6 flex flex-1 flex-col">
           <div className="space-y-5">
-            {/* Soru 1 */}
             <div className="space-y-2">
-              <p className="text-sm font-semibold">Araç tipi</p>
+              <span className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
+                Araç tipi
+              </span>
               <div className="grid grid-cols-3 gap-2 text-xs">
                 {VEHICLE_OPTIONS.map((opt) => {
                   const active = opt.key === vehicleType;
@@ -157,10 +164,10 @@ export default function CekiciDetaylarPage() {
                       key={opt.key}
                       type="button"
                       onClick={() => setVehicleType(opt.key)}
-                      className={`rounded-2xl px-2 py-2 text-center font-medium ${
+                      className={`rounded-[14px] px-2 py-3 text-center font-bold ${
                         active
-                          ? "bg-emerald-600 text-white"
-                          : "bg-slate-950 text-slate-200"
+                          ? "bg-[#111] text-white"
+                          : "bg-[var(--bg-soft)] text-[var(--text)]"
                       }`}
                     >
                       <div>{opt.icon}</div>
@@ -171,9 +178,10 @@ export default function CekiciDetaylarPage() {
               </div>
             </div>
 
-            {/* Soru 2 */}
             <div className="space-y-2">
-              <p className="text-sm font-semibold">Ne oldu?</p>
+              <span className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
+                Ne oldu?
+              </span>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 {BREAKDOWN_OPTIONS.map((opt) => {
                   const active = opt.key === breakdown;
@@ -182,10 +190,10 @@ export default function CekiciDetaylarPage() {
                       key={opt.key}
                       type="button"
                       onClick={() => setBreakdown(opt.key)}
-                      className={`rounded-2xl px-3 py-2 text-left font-medium ${
+                      className={`rounded-[14px] px-3 py-3 text-left font-bold ${
                         active
-                          ? "bg-red-600 text-white"
-                          : "bg-slate-950 text-slate-200"
+                          ? "bg-[#111] text-white"
+                          : "bg-[var(--bg-soft)] text-[var(--text)]"
                       }`}
                     >
                       <span className="mr-1">{opt.icon}</span>
@@ -196,17 +204,18 @@ export default function CekiciDetaylarPage() {
               </div>
             </div>
 
-            {/* Soru 3 */}
             <div className="space-y-2">
-              <p className="text-sm font-semibold">Vites</p>
+              <span className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
+                Vites
+              </span>
               <div className="flex gap-2 text-xs">
                 <button
                   type="button"
                   onClick={() => setTransmission("manuel")}
-                  className={`flex-1 rounded-2xl px-3 py-2 font-medium ${
+                  className={`flex-1 rounded-[14px] px-3 py-3 font-bold ${
                     transmission === "manuel"
-                      ? "bg-slate-100 text-slate-900"
-                      : "bg-slate-950 text-slate-200"
+                      ? "bg-[#111] text-white"
+                      : "bg-[var(--bg-soft)] text-[var(--text)]"
                   }`}
                 >
                   🕹️ Manuel
@@ -214,10 +223,10 @@ export default function CekiciDetaylarPage() {
                 <button
                   type="button"
                   onClick={() => setTransmission("otomatik")}
-                  className={`flex-1 rounded-2xl px-3 py-2 font-medium ${
+                  className={`flex-1 rounded-[14px] px-3 py-3 font-bold ${
                     transmission === "otomatik"
-                      ? "bg-slate-100 text-slate-900"
-                      : "bg-slate-950 text-slate-200"
+                      ? "bg-[#111] text-white"
+                      : "bg-[var(--bg-soft)] text-[var(--text)]"
                   }`}
                 >
                   🤖 Otomatik
@@ -225,17 +234,18 @@ export default function CekiciDetaylarPage() {
               </div>
             </div>
 
-            {/* Soru 4 */}
             <div className="space-y-2">
-              <p className="text-sm font-semibold">Çekiş</p>
+              <span className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
+                Çekiş
+              </span>
               <div className="flex gap-2 text-xs">
                 <button
                   type="button"
                   onClick={() => setDriveType("2wd")}
-                  className={`flex-1 rounded-2xl px-3 py-2 font-medium ${
+                  className={`flex-1 rounded-[14px] px-3 py-3 font-bold ${
                     driveType === "2wd"
-                      ? "bg-emerald-600 text-white"
-                      : "bg-slate-950 text-slate-200"
+                      ? "bg-[#111] text-white"
+                      : "bg-[var(--bg-soft)] text-[var(--text)]"
                   }`}
                 >
                   2WD Normal
@@ -243,10 +253,10 @@ export default function CekiciDetaylarPage() {
                 <button
                   type="button"
                   onClick={() => setDriveType("4x4")}
-                  className={`flex-1 rounded-2xl px-3 py-2 font-medium ${
+                  className={`flex-1 rounded-[14px] px-3 py-3 font-bold ${
                     driveType === "4x4"
-                      ? "bg-emerald-600 text-white"
-                      : "bg-slate-950 text-slate-200"
+                      ? "bg-[#111] text-white"
+                      : "bg-[var(--bg-soft)] text-[var(--text)]"
                   }`}
                 >
                   4x4 / AWD
@@ -254,38 +264,37 @@ export default function CekiciDetaylarPage() {
               </div>
             </div>
 
-            {/* Soru 5 */}
             <div className="space-y-2">
-              <p className="text-sm font-semibold">Ekstra not (isteğe bağlı)</p>
+              <span className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
+                Ekstra not (isteğe bağlı)
+              </span>
               <textarea
                 rows={3}
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="Örn: Araç alçak, dikkatli yüklenmesi gerekiyor."
-                className="w-full rounded-2xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-100 outline-none placeholder:text-slate-600"
+                className="w-full rounded-[14px] border border-transparent bg-[var(--bg-soft)] px-4 py-3 text-sm font-semibold text-[var(--text)] outline-none placeholder:text-[var(--text-muted)]"
               />
             </div>
 
-            {/* Canlı özet */}
-            <div className="space-y-2 rounded-2xl border border-emerald-700 bg-emerald-950/60 px-4 py-3 text-xs text-emerald-50">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-200">
+            <div className="rounded-[16px] border border-[var(--border)] bg-[var(--bg-card)] p-4">
+              <span className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
                 Canlı Özet
-              </p>
+              </span>
               {hasEnoughForSummary ? (
                 <div className="mt-2 flex flex-wrap gap-2">
                   {summaryTags.map((tag) => (
                     <span
                       key={tag}
-                      className="rounded-full bg-emerald-800/70 px-3 py-1 text-[11px]"
+                      className="rounded-full bg-[var(--green)]/20 px-3 py-1 text-xs font-semibold text-[var(--green)]"
                     >
                       {tag}
                     </span>
                   ))}
                 </div>
               ) : (
-                <p className="mt-1 text-[11px] text-emerald-100">
-                  Seçim yaptıkça özet burada yeşil etiketler olarak
-                  görünecek.
+                <p className="mt-2 text-xs text-[var(--text-dim)]">
+                  Seçim yaptıkça özet burada yeşil etiketler olarak görünecek.
                 </p>
               )}
             </div>
@@ -295,16 +304,15 @@ export default function CekiciDetaylarPage() {
             type="button"
             onClick={handleSubmit}
             disabled={loading}
-            className="mt-6 w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-emerald-500/40 disabled:bg-slate-700 disabled:text-slate-300"
+            className="mt-6 w-full rounded-[14px] bg-[#111] px-4 py-4 text-[15px] font-bold text-white disabled:opacity-50"
           >
             {loading ? "Gönderiliyor..." : "Teklif İste"}
           </button>
           {error && (
-            <p className="mt-2 text-sm text-red-400">{error}</p>
+            <p className="mt-2 text-sm text-red-500">{error}</p>
           )}
         </section>
       </main>
     </div>
   );
 }
-

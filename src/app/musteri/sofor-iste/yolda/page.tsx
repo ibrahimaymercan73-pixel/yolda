@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import { Suspense } from "react";
 import { useState } from "react";
@@ -33,59 +33,73 @@ function SoforYoldaContent() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <main className="flex min-h-screen w-full max-w-[430px] flex-col bg-background px-5 py-6 text-foreground">
-        <header className="mb-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">
-            Şoför İste
-          </p>
-          <h1 className="text-xl font-semibold">Şoför Yolda</h1>
-        </header>
+    <div className="min-h-screen bg-[var(--bg)]">
+      <main className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col px-5 py-6">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="mb-4 flex h-9 w-9 items-center justify-center rounded-[12px] bg-[var(--bg-soft)] text-[var(--text)]"
+        >
+          ←
+        </button>
+        <h1
+          className="text-[28px] font-extrabold text-[var(--text)]"
+          style={{ letterSpacing: "-0.8px" }}
+        >
+          Şoför Yolda
+        </h1>
 
-        <section className="flex flex-1 flex-col justify-between">
+        <section className="mt-6 flex flex-1 flex-col">
           <div className="space-y-5">
-            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-600/15 px-3 py-1 text-xs font-semibold text-emerald-400">
+            <div className="inline-flex items-center gap-2 rounded-full bg-[var(--green)]/15 px-3 py-1.5 text-xs font-bold text-[var(--green)]">
               <span>✓</span>
               <span>Şoför yola çıktı!</span>
             </div>
 
-            {/* Şoför kartı */}
-            <div className="space-y-3 rounded-3xl border border-slate-800 bg-slate-950 px-4 py-4">
+            <div className="rounded-[16px] border border-[var(--border)] bg-[var(--bg-card)] p-4">
               <div className="flex items-center gap-3">
                 <span className="text-3xl">🧑‍✈️</span>
                 <div>
-                  <p className="text-sm font-semibold">Ahmet</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="font-bold text-[var(--text)]">Ahmet</p>
+                  <p className="text-xs text-[var(--text-dim)]">
                     Kendi yöntemiyle geliyor. Konumun şoförle paylaşılmaz.
                   </p>
                 </div>
               </div>
 
-              <div className="mt-3 rounded-2xl bg-slate-900 px-3 py-2 text-xs">
-                <p className="font-medium">Araç bilgisi</p>
-                <p className="mt-1 text-slate-300">
-                  Ahmet bu arabayı sürecek: <span className="font-semibold">Honda Civic</span> •{" "}
-                  <span className="font-semibold">34 ZK 4821</span>
+              <div className="mt-3 rounded-[14px] bg-[var(--bg-soft)] p-3 text-xs">
+                <p className="font-bold text-[var(--text)]">Araç bilgisi</p>
+                <p className="mt-1 text-[var(--text-dim)]">
+                  Ahmet bu arabayı sürecek:{" "}
+                  <span className="font-semibold text-[var(--text)]">
+                    Honda Civic
+                  </span>{" "}
+                  •{" "}
+                  <span className="font-semibold text-[var(--text)]">
+                    34 ZK 4821
+                  </span>
                 </p>
               </div>
             </div>
 
-            {/* Tahmini süre */}
-            <div className="space-y-2 rounded-2xl bg-slate-950 px-4 py-3 text-xs">
-              <p className="text-slate-400">Tahmini varış süresi</p>
-              <p className="text-lg font-semibold">{eta} dakika</p>
-              <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-800">
-                <div className="h-full w-3/5 bg-primary" />
+            <div className="rounded-[16px] border border-[var(--border)] bg-[var(--bg-card)] p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
+                Tahmini varış süresi
+              </p>
+              <p className="mt-1 text-lg font-bold text-[var(--text)]">
+                {eta} dakika
+              </p>
+              <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[var(--bg-soft)]">
+                <div className="h-full w-3/5 rounded-full bg-[#111]" />
               </div>
             </div>
 
-            {/* Sahte harita */}
-            <div className="relative h-40 overflow-hidden rounded-2xl bg-slate-900">
+            <div className="relative h-40 overflow-hidden rounded-[16px] bg-[var(--bg-soft)]">
               <div className="absolute inset-0 opacity-30">
-                <div className="absolute left-8 top-0 h-full w-px bg-slate-700" />
-                <div className="absolute right-8 top-0 h-full w-px bg-slate-700" />
-                <div className="absolute left-0 top-10 h-px w-full bg-slate-700" />
-                <div className="absolute left-0 bottom-8 h-px w-full bg-slate-700" />
+                <div className="absolute left-8 top-0 h-full w-px bg-[var(--border)]" />
+                <div className="absolute right-8 top-0 h-full w-px bg-[var(--border)]" />
+                <div className="absolute left-0 top-10 h-px w-full bg-[var(--border)]" />
+                <div className="absolute left-0 bottom-8 h-px w-full bg-[var(--border)]" />
               </div>
               <div className="relative h-full w-full">
                 <span className="absolute left-1/3 top-1/3 text-xl">🚗</span>
@@ -93,12 +107,11 @@ function SoforYoldaContent() {
               </div>
             </div>
 
-            {/* Aksiyon butonları */}
             <div className="flex gap-3 text-sm">
-              <button className="flex-1 rounded-2xl bg-slate-900 px-4 py-3 font-semibold text-slate-100">
+              <button className="flex-1 rounded-[14px] bg-[var(--bg-soft)] px-4 py-3 font-bold text-[var(--text)]">
                 📞 Ara
               </button>
-              <button className="flex-1 rounded-2xl bg-slate-900 px-4 py-3 font-semibold text-slate-100">
+              <button className="flex-1 rounded-[14px] bg-[var(--bg-soft)] px-4 py-3 font-bold text-[var(--text)]">
                 💬 Mesaj
               </button>
             </div>
@@ -108,13 +121,11 @@ function SoforYoldaContent() {
             type="button"
             onClick={handleStart}
             disabled={loading}
-            className="mt-6 w-full rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground disabled:bg-slate-700 disabled:text-slate-400"
+            className="mt-6 w-full rounded-[14px] bg-[#111] px-4 py-4 text-[15px] font-bold text-white disabled:opacity-50"
           >
             {loading ? "Güncelleniyor..." : "Şoför Geldi, Yola Çıktım"}
           </button>
-          {error && (
-            <p className="mt-2 text-sm text-red-400">{error}</p>
-          )}
+          {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
         </section>
       </main>
     </div>
@@ -125,7 +136,7 @@ export default function SoforYoldaPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-background text-sm text-slate-400">
+        <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] text-sm text-[var(--text-dim)]">
           Şoför durumu yükleniyor...
         </div>
       }
@@ -134,4 +145,3 @@ export default function SoforYoldaPage() {
     </Suspense>
   );
 }
-

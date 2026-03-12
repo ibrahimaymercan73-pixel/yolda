@@ -35,14 +35,15 @@ function SoforOnayBeklemeContent() {
           filter: `id=eq.${requestId}`,
         },
         (payload) => {
-          const status = (payload.new as any).status;
+          const status = (payload.new as { status?: string }).status;
           if (status === "eslesti") {
             router.push(
               `/musteri/sofor-iste/yolda?request_id=${requestId}`
             );
           }
         }
-      );
+      )
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
@@ -52,58 +53,62 @@ function SoforOnayBeklemeContent() {
   const progress = ((COUNTDOWN_SECONDS - remaining) / COUNTDOWN_SECONDS) * 100;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <main className="flex min-h-screen w-full max-w-[430px] flex-col bg-background px-5 py-6 text-foreground">
-        <header className="mb-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">
-            Şoför İste
-          </p>
-          <h1 className="text-xl font-semibold">Onay Bekleniyor</h1>
-        </header>
+    <div className="min-h-screen bg-[var(--bg)]">
+      <main className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col px-5 py-6">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="mb-4 flex h-9 w-9 items-center justify-center rounded-[12px] bg-[var(--bg-soft)] text-[var(--text)]"
+        >
+          ←
+        </button>
+        <h1
+          className="text-[28px] font-extrabold text-[var(--text)]"
+          style={{ letterSpacing: "-0.8px" }}
+        >
+          Onay Bekleniyor
+        </h1>
 
-        <section className="flex flex-1 flex-col items-center justify-between">
+        <section className="mt-6 flex flex-1 flex-col items-center justify-between">
           <div className="w-full space-y-6">
-            {/* Seçilen şoför örnek kartı */}
-            <div className="mx-auto max-w-xs rounded-3xl border border-slate-800 bg-slate-950 px-4 py-4 text-center">
+            <div className="mx-auto max-w-xs rounded-[16px] border border-[var(--border)] bg-[var(--bg-card)] p-4 text-center">
               <div className="flex flex-col items-center gap-2">
                 <span className="text-4xl">🧑‍✈️</span>
-                <p className="text-sm font-semibold">Ahmet</p>
-                <p className="text-xs text-slate-400">
+                <p className="font-bold text-[var(--text)]">Ahmet</p>
+                <p className="text-xs text-[var(--text-dim)]">
                   Kadıköy / Moda • 320+ sefer
                 </p>
-                <p className="mt-1 text-xs text-yellow-300">★ 4.9</p>
+                <p className="mt-1 text-xs text-[var(--text-dim)]">★ 4.9</p>
               </div>
             </div>
 
             <div className="space-y-2">
-              <p className="text-center text-sm font-medium">
+              <p className="text-center text-sm font-semibold text-[var(--text)]">
                 Şoförden onay bekleniyor...
               </p>
-              <p className="text-center text-xs text-slate-400">
+              <p className="text-center text-xs text-[var(--text-dim)]">
                 Onay vermezse sıradakine geçilir.
               </p>
             </div>
 
             <div className="mx-auto flex w-full max-w-xs flex-col items-center gap-3">
-              <div className="relative h-2 w-full overflow-hidden rounded-full bg-slate-800">
+              <div className="relative h-2 w-full overflow-hidden rounded-full bg-[var(--bg-soft)]">
                 <div
-                  className="h-full bg-primary transition-all"
+                  className="h-full bg-[#111] transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 />
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-[var(--text-dim)]">
                 {remaining} saniye içinde yanıt bekleniyor
               </p>
             </div>
           </div>
 
-          <p className="mt-4 text-center text-[11px] text-slate-500">
+          <p className="mt-4 text-center text-xs text-[var(--text-dim)]">
             Şoför onay verdiğinde otomatik olarak sonraki adıma geçilecek.
           </p>
           {error && (
-            <p className="mt-2 text-center text-xs text-red-400">
-              {error}
-            </p>
+            <p className="mt-2 text-center text-sm text-red-500">{error}</p>
           )}
         </section>
       </main>
@@ -115,7 +120,7 @@ export default function SoforOnayBeklemePage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-background text-sm text-slate-400">
+        <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] text-sm text-[var(--text-dim)]">
           Şoför onay ekranı yükleniyor...
         </div>
       }
@@ -124,4 +129,3 @@ export default function SoforOnayBeklemePage() {
     </Suspense>
   );
 }
-

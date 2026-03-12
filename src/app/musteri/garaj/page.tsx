@@ -90,116 +90,121 @@ export default function GarajPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <main className="flex min-h-screen w-full max-w-[430px] flex-col bg-background px-5 py-6 text-foreground">
-        <header className="mb-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">
-            Müşteri
-          </p>
-          <div className="mt-1 flex items-center justify-between">
-            <h1 className="text-2xl font-semibold">Araçlarım 🚗</h1>
-          </div>
-          <p className="mt-2 text-xs text-slate-500">
-            Buradan garajındaki araçları yönetebilir, aktif aracı
-            değiştirebilirsin.
-          </p>
-        </header>
+    <div className="min-h-screen bg-[var(--bg)]">
+      <main className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col px-5 py-6">
+        <button
+          type="button"
+          onClick={() => router.push("/musteri/anasayfa")}
+          className="mb-4 flex h-9 w-9 items-center justify-center rounded-[12px] bg-[var(--bg-soft)] text-[var(--text)]"
+        >
+          ←
+        </button>
+        <h1
+          className="text-[28px] font-extrabold text-[var(--text)]"
+          style={{ letterSpacing: "-0.8px" }}
+        >
+          Araçlarım 🚗
+        </h1>
+        <p className="mt-2 text-sm text-[var(--text-dim)]">
+          Buradan garajındaki araçları yönetebilir, aktif aracı değiştirebilirsin.
+        </p>
 
-        <section className="flex flex-1 flex-col justify-between">
-          <div className="space-y-4">
-            {loading && (
-              <p className="text-sm text-slate-400">Araçların yükleniyor...</p>
-            )}
+        <section className="mt-6 flex-1 space-y-4">
+          {loading && (
+            <p className="text-sm text-[var(--text-dim)]">Araçların yükleniyor...</p>
+          )}
 
-            {error && (
-              <p className="text-sm text-red-400">
-                {error}
-              </p>
-            )}
+          {error && (
+            <p className="text-sm text-red-500">{error}</p>
+          )}
 
-            {!loading && vehicles.length === 0 && !error && (
-              <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-900/40 px-4 py-6 text-center text-sm text-slate-400">
-                Henüz kayıtlı aracın yok.{" "}
+          {!loading && vehicles.length === 0 && !error && (
+            <div className="rounded-[16px] border border-[var(--border)] bg-[var(--bg-card)] px-4 py-6 text-center text-sm text-[var(--text-dim)]">
+              Henüz kayıtlı aracın yok.{" "}
+              <button
+                type="button"
+                onClick={handleAddNew}
+                className="font-bold text-[var(--text)] underline"
+              >
+                Hemen ekle
+              </button>
+              .
+            </div>
+          )}
+
+          {vehicles.map((vehicle) => (
+            <div
+              key={vehicle.id}
+              className="rounded-[16px] border border-[var(--border)] bg-[var(--bg-card)] p-4"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-bold text-[var(--text)]">
+                    {vehicle.brand} {vehicle.model}
+                  </p>
+                  <p className="mt-1 text-xs text-[var(--text-dim)]">
+                    Renk: {vehicle.color ?? "-"}
+                  </p>
+                </div>
+                {vehicle.is_active && (
+                  <span className="rounded-full bg-[#111] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+                    Aktif
+                  </span>
+                )}
+              </div>
+
+              <div
+                className="mt-2 inline-flex rounded-md px-3 py-1 text-sm font-bold"
+                style={{
+                  backgroundColor: "var(--yellow)",
+                  color: "#92400E",
+                }}
+              >
+                {vehicle.plate}
+              </div>
+
+              <div className="mt-4 flex items-center gap-3 text-xs">
                 <button
                   type="button"
-                  onClick={handleAddNew}
-                  className="font-semibold text-primary underline underline-offset-4"
+                  onClick={() => handleSetActive(vehicle.id)}
+                  disabled={vehicle.is_active}
+                  className="flex-1 rounded-[14px] bg-[#111] px-3 py-3 font-bold text-white disabled:opacity-50"
                 >
-                  Hemen ekle
+                  Aktif Yap
                 </button>
-                .
+                <button
+                  type="button"
+                  onClick={() => handleDelete(vehicle.id)}
+                  className="flex items-center gap-1 rounded-[14px] bg-[var(--bg-soft)] px-3 py-3 font-semibold text-[var(--text)]"
+                >
+                  <span>🗑️</span>
+                  <span>Sil</span>
+                </button>
               </div>
-            )}
+            </div>
+          ))}
 
-            {vehicles.map((vehicle) => (
-              <div
-                key={vehicle.id}
-                className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950 px-4 py-3"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold">
-                      {vehicle.brand} {vehicle.model}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-400">
-                      Renk: {vehicle.color ?? "-"}
-                    </p>
-                  </div>
-                  {vehicle.is_active && (
-                    <span className="rounded-full bg-[#FF4500]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#FF4500]">
-                      Aktif
-                    </span>
-                  )}
-                </div>
-
-                <div className="mt-1 inline-flex items-center justify-center rounded-md border border-yellow-500 bg-gradient-to-b from-yellow-300 to-yellow-500 px-4 py-1 text-sm font-semibold tracking-[0.25em] text-slate-900">
-                  {vehicle.plate}
-                </div>
-
-                <div className="mt-3 flex items-center justify-between gap-3 text-xs">
-                  <button
-                    type="button"
-                    onClick={() => handleSetActive(vehicle.id)}
-                    className={`flex-1 rounded-2xl px-3 py-2 font-semibold ${
-                      vehicle.is_active
-                        ? "bg-slate-800 text-slate-400"
-                        : "bg-primary text-primary-foreground"
-                    }`}
-                  >
-                    Aktif Yap
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(vehicle.id)}
-                    className="flex items-center gap-1 rounded-2xl bg-slate-900 px-3 py-2 font-medium text-slate-300"
-                  >
-                    <span>🗑️</span>
-                    <span>Sil</span>
-                  </button>
-                </div>
-              </div>
-            ))}
-
-            <button
-              type="button"
-              onClick={handleAddNew}
-              className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-600 bg-slate-900/40 px-4 py-3 text-sm font-medium text-slate-200"
-            >
-              <span className="text-lg">＋</span>
-              <span>Yeni Araç Ekle</span>
-            </button>
-          </div>
-
-          <div className="mt-6 rounded-2xl border border-emerald-700 bg-emerald-950/60 px-4 py-3 text-xs text-emerald-200">
-            <p className="font-semibold">Bilgi</p>
-            <p className="mt-1">
-              Aktif araç şoföre otomatik gönderilir. Böylece her çağrıda tekrar
-              araç seçmek zorunda kalmazsın.
-            </p>
-          </div>
+          <button
+            type="button"
+            onClick={handleAddNew}
+            className="flex w-full items-center justify-center gap-2 rounded-[16px] border-2 border-dashed border-[var(--border)] bg-transparent py-4 text-sm font-semibold text-[var(--text-dim)]"
+          >
+            <span className="text-lg">＋</span>
+            <span>Yeni Araç Ekle</span>
+          </button>
         </section>
+
+        <div
+          className="mt-6 rounded-[16px] border border-[var(--border)] p-4 text-xs"
+          style={{ backgroundColor: "var(--yellow-bg)" }}
+        >
+          <p className="font-bold text-[var(--text)]">Bilgi</p>
+          <p className="mt-1 text-[var(--text-dim)]">
+            Aktif araç şoföre otomatik gönderilir. Böylece her çağrıda tekrar
+            araç seçmek zorunda kalmazsın.
+          </p>
+        </div>
       </main>
     </div>
   );
 }
-

@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -25,7 +25,6 @@ function CekiciOdemeContent() {
     try {
       const user = await getCurrentUser();
 
-      // ilgili kabul edilen teklif üzerinden çekici id'sini bul
       const { data: offer, error: offerError } = await supabase
         .from("tow_offers")
         .select("tow_provider_id")
@@ -61,7 +60,7 @@ function CekiciOdemeContent() {
 
       const avg =
         (avgData?.reduce((sum, r) => sum + r.rating, 0) ?? 0) /
-          (avgData?.length || 1);
+        (avgData?.length || 1);
 
       await supabase
         .from("tow_profiles")
@@ -78,65 +77,79 @@ function CekiciOdemeContent() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <main className="flex min-h-screen w-full max-w-[430px] flex-col bg-background px-5 py-6 text-foreground">
-        <header className="mb-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">
-            Çekici Çağır
-          </p>
-          <h1 className="text-xl font-semibold">Ödeme</h1>
-        </header>
+    <div className="min-h-screen bg-[var(--bg)]">
+      <main className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col px-5 py-6">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="mb-4 flex h-9 w-9 items-center justify-center rounded-[12px] bg-[var(--bg-soft)] text-[var(--text)]"
+        >
+          ←
+        </button>
+        <h1
+          className="text-[28px] font-extrabold text-[var(--text)]"
+          style={{ letterSpacing: "-0.8px" }}
+        >
+          Ödeme
+        </h1>
 
-        <section className="flex flex-1 flex-col justify-between">
+        <section className="mt-6 flex flex-1 flex-col">
           <div className="space-y-5">
-            <div className="rounded-3xl bg-emerald-600/10 px-4 py-4 text-center">
+            <div className="rounded-[16px] border border-[var(--border)] bg-[var(--green)]/10 p-4 text-center">
               <p className="text-3xl">✅</p>
-              <p className="mt-2 text-lg font-semibold">
+              <p className="mt-2 text-lg font-bold text-[var(--text)]">
                 Araç Teslim Edildi!
               </p>
-              <p className="mt-1 text-xs text-emerald-100">
+              <p className="mt-1 text-xs text-[var(--text-dim)]">
                 Çekici aracın hedef noktaya güvenle ulaştırdı.
               </p>
             </div>
 
-            <div className="space-y-3 rounded-2xl bg-slate-950 px-4 py-3 text-xs">
-              <div>
-                <p className="font-semibold text-slate-200">Rota Özeti</p>
-                <p className="mt-1 text-slate-400">
-                  Kadıköy → Yakın Servis, yoğun olmayan trafikte çekildi.
-                </p>
-              </div>
+            <div className="rounded-[16px] border border-[var(--border)] bg-[var(--bg-card)] p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
+                Rota Özeti
+              </p>
+              <p className="mt-2 text-sm text-[var(--text)]">
+                Kadıköy → Yakın Servis, yoğun olmayan trafikte çekildi.
+              </p>
 
-              <div className="h-px bg-slate-800" />
+              <div className="mt-4 h-px bg-[var(--border)]" />
 
-              <div className="space-y-1">
-                <p className="font-semibold text-slate-200">Ücret Detayı</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400">Çekici hizmeti</span>
+              <p className="mt-4 text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
+                Ücret Detayı
+              </p>
+              <div className="mt-2 space-y-1 text-sm">
+                <div className="flex items-center justify-between text-[var(--text)]">
+                  <span className="text-[var(--text-dim)]">Çekici hizmeti</span>
                   <span>900 TL</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-400">Platform hizmeti</span>
+                <div className="flex items-center justify-between text-[var(--text)]">
+                  <span className="text-[var(--text-dim)]">Platform hizmeti</span>
                   <span>80 TL</span>
                 </div>
-                <div className="flex items-center justify-between pt-1 text-sm font-semibold">
+                <div className="flex items-center justify-between pt-2 font-bold text-[var(--text)]">
                   <span>Toplam</span>
                   <span>980 TL</span>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-2 rounded-2xl bg-slate-950 px-4 py-3 text-xs">
-              <p className="font-semibold text-slate-200">
+            <div className="rounded-[16px] border border-[var(--border)] bg-[var(--bg-card)] p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
                 Çekiciyi Değerlendir
               </p>
-              <div className="mt-2 flex justify-center gap-2 text-2xl">
+              <div className="mt-3 flex justify-center gap-2 text-2xl">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
                     type="button"
                     onClick={() => setRating(star)}
-                    className={star <= rating ? "text-yellow-300" : "text-slate-500"}
+                    className={
+                      star <= rating ? "opacity-100" : "text-[var(--text-muted)]"
+                    }
+                    style={
+                      star <= rating ? { color: "var(--yellow)" } : undefined
+                    }
                   >
                     ⭐
                   </button>
@@ -149,12 +162,12 @@ function CekiciOdemeContent() {
             type="button"
             onClick={handleComplete}
             disabled={loading}
-            className="mt-6 w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white disabled:bg-slate-700 disabled:text-slate-300"
+            className="mt-6 w-full rounded-[14px] bg-[#111] px-4 py-4 text-[15px] font-bold text-white disabled:opacity-50"
           >
             {loading ? "İşleniyor..." : "Ödemeyi Tamamla"}
           </button>
           {error && (
-            <p className="mt-2 text-sm text-red-400">{error}</p>
+            <p className="mt-2 text-sm text-red-500">{error}</p>
           )}
         </section>
       </main>
@@ -166,7 +179,7 @@ export default function CekiciOdemePage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-background text-sm text-slate-400">
+        <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] text-sm text-[var(--text-dim)]">
           Ödeme ekranı yükleniyor...
         </div>
       }
@@ -175,4 +188,3 @@ export default function CekiciOdemePage() {
     </Suspense>
   );
 }
-

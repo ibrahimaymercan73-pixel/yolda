@@ -82,22 +82,31 @@ function CekiciTekliflerContent() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <main className="flex min-h-screen w-full max-w-[430px] flex-col bg-background px-5 py-6 text-foreground">
-        <header className="mb-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">
-            Çekici Çağır
-          </p>
-          <h1 className="text-xl font-semibold">3 Teklif Geldi 🎯</h1>
-        </header>
+    <div className="min-h-screen bg-[var(--bg)]">
+      <main className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col px-5 py-6">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="mb-4 flex h-9 w-9 items-center justify-center rounded-[12px] bg-[var(--bg-soft)] text-[var(--text)]"
+        >
+          ←
+        </button>
+        <h1
+          className="text-[28px] font-extrabold text-[var(--text)]"
+          style={{ letterSpacing: "-0.8px" }}
+        >
+          3 Teklif Geldi 🎯
+        </h1>
 
-        <section className="flex flex-1 flex-col justify-between">
+        <section className="mt-6 flex flex-1 flex-col">
           <div className="space-y-3">
             {loading && (
-              <p className="text-sm text-slate-400">Teklifler yükleniyor...</p>
+              <p className="text-sm text-[var(--text-dim)]">
+                Teklifler yükleniyor...
+              </p>
             )}
             {error && (
-              <p className="text-sm text-red-400">{error}</p>
+              <p className="text-sm text-red-500">{error}</p>
             )}
             {!loading &&
               offers.map((offer) => {
@@ -107,23 +116,23 @@ function CekiciTekliflerContent() {
                     key={offer.id}
                     type="button"
                     onClick={() => setSelectedId(offer.id)}
-                    className={`w-full rounded-2xl border px-4 py-3 text-left text-sm transition ${
+                    className={`w-full rounded-[16px] border p-4 text-left text-sm transition ${
                       active
-                        ? "border-emerald-500 bg-slate-900"
-                        : "border-slate-800 bg-slate-950"
+                        ? "border-[#111] bg-[var(--bg-card)] ring-2 ring-[#111]"
+                        : "border-[var(--border)] bg-[var(--bg-card)]"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-sm font-semibold text-slate-50">
+                        <p className="font-bold text-[var(--text)]">
                           Çekici Teklifi
                         </p>
-                        <p className="mt-1 text-[11px] text-slate-400">
+                        <p className="mt-1 text-xs text-[var(--text-dim)]">
                           Sağlayıcı: {offer.tow_provider_id.slice(0, 6)}…
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-lg font-semibold text-emerald-400">
+                        <p className="text-lg font-bold text-[var(--green)]">
                           ₺{offer.price}
                         </p>
                       </div>
@@ -137,11 +146,7 @@ function CekiciTekliflerContent() {
             type="button"
             disabled={!selectedId || saving}
             onClick={handleConfirm}
-            className={`mt-6 w-full rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-              selectedId && !saving
-                ? "bg-emerald-600 text-white shadow-sm shadow-emerald-500/40"
-                : "bg-slate-800 text-slate-500"
-            }`}
+            className="mt-6 w-full rounded-[14px] bg-[#111] px-4 py-4 text-[15px] font-bold text-white disabled:opacity-50"
           >
             {saving ? "Onaylanıyor..." : "Seçili Çekiciyi Onayla"}
           </button>
@@ -155,7 +160,7 @@ export default function CekiciTekliflerPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-background text-sm text-slate-400">
+        <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] text-sm text-[var(--text-dim)]">
           Çekici teklifleri yükleniyor...
         </div>
       }
@@ -164,4 +169,3 @@ export default function CekiciTekliflerPage() {
     </Suspense>
   );
 }
-

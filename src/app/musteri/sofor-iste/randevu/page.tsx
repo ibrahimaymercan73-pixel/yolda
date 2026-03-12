@@ -32,7 +32,6 @@ export default function SoforRandevuPage() {
   const preview = useMemo(() => {
     const dayLabel =
       day === "bugun" ? "Bugün" : day === "yarin" ? "Yarın" : "Öbür gün";
-    // Örnek gün ismi olarak Pazar kullanalım
     const weekday = "Pazar";
     return `${dayLabel} · ${weekday}, ${hour}`;
   }, [day, hour]);
@@ -43,20 +42,28 @@ export default function SoforRandevuPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <main className="flex min-h-screen w-full max-w-[430px] flex-col bg-background px-5 py-6 text-foreground">
-        <header className="mb-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">
-            Şoför İste
-          </p>
-          <h1 className="text-xl font-semibold">Randevu Seç</h1>
-        </header>
+    <div className="min-h-screen bg-[var(--bg)]">
+      <main className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col px-5 py-6">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="mb-4 flex h-9 w-9 items-center justify-center rounded-[12px] bg-[var(--bg-soft)] text-[var(--text)]"
+        >
+          ←
+        </button>
+        <h1
+          className="text-[28px] font-extrabold text-[var(--text)]"
+          style={{ letterSpacing: "-0.8px" }}
+        >
+          Randevu Seç
+        </h1>
 
-        <section className="flex flex-1 flex-col justify-between">
+        <section className="mt-6 flex flex-1 flex-col">
           <div className="space-y-5">
-            {/* Gün seçici */}
             <div className="space-y-2">
-              <p className="text-sm font-medium">Gün</p>
+              <span className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
+                Gün
+              </span>
               <div className="flex gap-2">
                 {DAYS.map((d) => {
                   const active = d.key === day;
@@ -65,10 +72,10 @@ export default function SoforRandevuPage() {
                       key={d.key}
                       type="button"
                       onClick={() => setDay(d.key)}
-                      className={`flex-1 rounded-2xl px-3 py-2 text-xs font-semibold ${
+                      className={`flex-1 rounded-[14px] px-3 py-3 text-sm font-bold ${
                         active
-                          ? "bg-[#FF4500] text-white"
-                          : "bg-slate-900 text-slate-300"
+                          ? "bg-[#111] text-white"
+                          : "bg-[var(--bg-soft)] text-[var(--text)]"
                       }`}
                     >
                       {d.label}
@@ -78,9 +85,10 @@ export default function SoforRandevuPage() {
               </div>
             </div>
 
-            {/* Saat seçici */}
             <div className="space-y-2">
-              <p className="text-sm font-medium">Saat</p>
+              <span className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
+                Saat
+              </span>
               <div className="flex flex-wrap gap-2">
                 {HOURS.map((h) => {
                   const active = h === hour;
@@ -89,10 +97,10 @@ export default function SoforRandevuPage() {
                       key={h}
                       type="button"
                       onClick={() => setHour(h)}
-                      className={`rounded-2xl px-3 py-2 text-xs font-semibold ${
+                      className={`rounded-[14px] px-3 py-2 text-xs font-bold ${
                         active
-                          ? "bg-slate-100 text-slate-900"
-                          : "bg-slate-900 text-slate-300"
+                          ? "bg-[#111] text-white"
+                          : "bg-[var(--bg-soft)] text-[var(--text)]"
                       }`}
                     >
                       {h}
@@ -102,14 +110,15 @@ export default function SoforRandevuPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl bg-slate-950 px-4 py-3 text-xs text-slate-200">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+            <div className="rounded-[16px] border border-[var(--border)] bg-[var(--bg-card)] p-4">
+              <span className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
                 Önizleme
+              </span>
+              <p className="mt-2 text-sm font-semibold text-[var(--text)]">
+                {preview}
               </p>
-              <p className="mt-1 text-sm">{preview}</p>
             </div>
 
-            {/* Basitleştirilmiş şoför listesi */}
             <div className="space-y-3">
               {["Ahmet", "Zeynep", "Emre"].map((name, index) => {
                 const id = String(index + 1);
@@ -119,10 +128,10 @@ export default function SoforRandevuPage() {
                     key={id}
                     type="button"
                     onClick={() => setSelectedDriver(id)}
-                    className={`w-full rounded-2xl border px-4 py-3 text-left text-sm ${
+                    className={`w-full rounded-[16px] border p-4 text-left text-sm ${
                       active
-                        ? "border-[#FF4500] bg-slate-900"
-                        : "border-slate-800 bg-slate-950"
+                        ? "border-[#111] ring-2 ring-[#111] bg-[var(--bg-card)]"
+                        : "border-[var(--border)] bg-[var(--bg-card)]"
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -131,13 +140,15 @@ export default function SoforRandevuPage() {
                           {name === "Zeynep" ? "👩‍✈️" : "🧑‍✈️"}
                         </span>
                         <div>
-                          <p className="font-semibold">{name}</p>
-                          <p className="text-[11px] text-slate-400">
+                          <p className="font-bold text-[var(--text)]">{name}</p>
+                          <p className="text-xs text-[var(--text-dim)]">
                             Randevulu siparişler için uygun
                           </p>
                         </div>
                       </div>
-                      <p className="text-xs text-emerald-400">Müsait</p>
+                      <p className="text-xs font-semibold text-[var(--green)]">
+                        Müsait
+                      </p>
                     </div>
                   </button>
                 );
@@ -149,11 +160,7 @@ export default function SoforRandevuPage() {
             type="button"
             disabled={!selectedDriver}
             onClick={handleContinue}
-            className={`mt-6 w-full rounded-2xl px-4 py-3 text-sm font-semibold transition ${
-              selectedDriver
-                ? "bg-primary text-primary-foreground"
-                : "bg-slate-800 text-slate-500"
-            }`}
+            className="mt-6 w-full rounded-[14px] bg-[#111] px-4 py-4 text-[15px] font-bold text-white disabled:opacity-50"
           >
             Devam Et
           </button>
@@ -162,4 +169,3 @@ export default function SoforRandevuPage() {
     </div>
   );
 }
-

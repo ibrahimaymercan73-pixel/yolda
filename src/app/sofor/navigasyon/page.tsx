@@ -6,50 +6,60 @@ export default function SoforNavigasyonPage() {
   const router = useRouter();
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <main className="flex min-h-screen w-full max-w-[430px] flex-col bg-background px-5 py-6 text-foreground">
-        <header className="mb-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-success">
-            Şoför Paneli
-          </p>
-          <h1 className="text-xl font-semibold">Navigasyon</h1>
-        </header>
+    <div className="min-h-screen bg-[var(--bg)]">
+      <main className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col px-5 py-6">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="mb-4 flex h-9 w-9 items-center justify-center rounded-[12px] bg-[var(--bg-soft)] text-[var(--text)]"
+        >
+          ←
+        </button>
+        <h1
+          className="text-[28px] font-extrabold text-[var(--text)]"
+          style={{ letterSpacing: "-0.8px" }}
+        >
+          Navigasyon
+        </h1>
 
-        <section className="flex flex-1 flex-col justify-between">
+        <section className="mt-6 flex flex-1 flex-col">
           <div className="space-y-5">
-            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-600/15 px-3 py-1 text-xs font-semibold text-emerald-400">
+            <div className="inline-flex items-center gap-2 rounded-full bg-[var(--green)]/15 px-3 py-1.5 text-xs font-bold text-[var(--green)]">
               <span>➡</span>
               <span>Müşteriye Git</span>
             </div>
 
-            <div className="rounded-2xl bg-slate-950 px-4 py-3 text-xs">
-              <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">
+            <div className="rounded-[16px] border border-[var(--border)] bg-[var(--bg-card)] p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
                 Buluşma Noktası
               </p>
-              <p className="mt-1 text-sm font-medium text-slate-50">
+              <p className="mt-2 text-sm font-semibold text-[var(--text)]">
                 Bağdat Caddesi, Kadıköy (Cafe önünde)
               </p>
             </div>
 
-            <div className="space-y-2 rounded-3xl bg-[#FF4500]/20 px-4 py-4 text-xs text-orange-50">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-orange-100">
+            <div className="rounded-[16px] border border-[var(--border)] bg-[#111] p-4 text-white">
+              <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/70">
                 Müşterinin Arabası
               </p>
-              <p className="mt-1 text-sm font-semibold">🚗 Honda Civic</p>
-              <div className="mt-2 inline-flex items-center justify-center rounded-md border border-yellow-500 bg-gradient-to-b from-yellow-300 to-yellow-500 px-4 py-1 text-sm font-semibold tracking-[0.25em] text-slate-900">
+              <p className="mt-2 text-sm font-bold">🚗 Honda Civic</p>
+              <div
+                className="mt-2 inline-flex rounded-md px-3 py-1 text-sm font-bold"
+                style={{ backgroundColor: "var(--yellow)", color: "#92400E" }}
+              >
                 34 ZK 4821
               </div>
-              <p className="mt-2 text-[11px] text-orange-100">
+              <p className="mt-2 text-xs text-white/70">
                 Varışında bu arabaya bin, sen süreceksin.
               </p>
             </div>
 
-            <div className="relative h-40 overflow-hidden rounded-2xl bg-slate-900">
+            <div className="relative h-40 overflow-hidden rounded-[16px] bg-[var(--bg-soft)]">
               <div className="absolute inset-0 opacity-30">
-                <div className="absolute left-6 top-0 h-full w-px bg-slate-700" />
-                <div className="absolute right-6 top-0 h-full w-px bg-slate-700" />
-                <div className="absolute left-0 top-10 h-px w-full bg-slate-700" />
-                <div className="absolute left-0 bottom-8 h-px w-full bg-slate-700" />
+                <div className="absolute left-6 top-0 h-full w-px bg-[var(--border)]" />
+                <div className="absolute right-6 top-0 h-full w-px bg-[var(--border)]" />
+                <div className="absolute left-0 top-10 h-px w-full bg-[var(--border)]" />
+                <div className="absolute left-0 bottom-8 h-px w-full bg-[var(--border)]" />
               </div>
               <div className="relative h-full w-full">
                 <span className="absolute left-6 bottom-8 text-xl">🚶</span>
@@ -57,18 +67,18 @@ export default function SoforNavigasyonPage() {
               </div>
             </div>
 
-            <div className="space-y-2 rounded-2xl bg-slate-950 px-4 py-3 text-xs">
+            <div className="rounded-[16px] border border-[var(--border)] bg-[var(--bg-card)] p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">🙂</span>
                   <div>
-                    <p className="text-sm font-semibold">Mert</p>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="font-bold text-[var(--text)]">Mert</p>
+                    <p className="text-xs text-[var(--text-dim)]">
                       ★ 4.8 • 120+ sefer
                     </p>
                   </div>
                 </div>
-                <button className="rounded-2xl bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-100">
+                <button className="rounded-[14px] bg-[var(--bg-soft)] px-4 py-2 text-sm font-bold text-[var(--text)]">
                   📞 Ara
                 </button>
               </div>
@@ -78,7 +88,7 @@ export default function SoforNavigasyonPage() {
           <button
             type="button"
             onClick={() => router.push("/sofor/tamamlandi")}
-            className="mt-6 w-full rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground"
+            className="mt-6 w-full rounded-[14px] bg-[#111] px-4 py-4 text-[15px] font-bold text-white"
           >
             Müşteriyle Buluştum, Yola Çıkıyorum
           </button>
@@ -87,4 +97,3 @@ export default function SoforNavigasyonPage() {
     </div>
   );
 }
-

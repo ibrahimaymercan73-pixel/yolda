@@ -1,12 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "YOLDA",
@@ -20,7 +13,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr">
-      <body className={`${inter.variable} antialiased bg-background text-foreground`}>
+      <head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="antialiased" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
         {children}
       </body>
     </html>

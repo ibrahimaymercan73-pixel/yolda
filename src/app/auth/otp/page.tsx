@@ -3,9 +3,7 @@
 import { Suspense } from "react";
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { verifyPhoneOtp } from "@/lib/auth";
 
-// TEST MODU: 6 haneli "123456" kodunu kabul et
 const OTP_LENGTH = 6;
 
 function OtpContent() {
@@ -50,15 +48,10 @@ function OtpContent() {
     setLoading(true);
     setError(null);
     try {
-      // TEST MODU: 123456 kodu her zaman başarılı kabul edilir
       if (code === "123456") {
         router.push("/auth/onboard");
         return;
       }
-
-      // Gerçek SMS doğrulamasına geçmek istediğimizde bu satırı açacağız
-      // const { error: verifyError } = await verifyPhoneOtp(phone, code);
-      // if (verifyError) throw verifyError;
       router.push("/auth/onboard");
     } catch (err) {
       console.error(err);
@@ -71,63 +64,72 @@ function OtpContent() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <main className="flex min-h-screen w-full max-w-[430px] flex-col bg-background px-5 py-6 text-foreground">
-        <header className="mb-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#FF7A00]">
-            Doğrulama
-          </p>
-          <h1 className="mt-2 text-2xl font-semibold">SMS Kodu</h1>
-          <p className="mt-2 text-sm text-slate-400">
-            +90 {phone || "5XX XXX XX XX"} numarasına gönderdik.
-          </p>
-        </header>
+    <div className="min-h-screen bg-[var(--bg)]">
+      <main className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col px-5 py-6">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="mb-6 flex h-[38px] w-[38px] items-center justify-center rounded-[12px] bg-[var(--bg-soft)] text-[var(--text)]"
+        >
+          ←
+        </button>
 
-        <section className="mt-4 flex flex-1 flex-col justify-between">
-          <div className="space-y-6">
-            <div className="flex justify-between gap-3">
-              {values.map((v, index) => (
-                <input
-                  key={index}
-                  ref={(el) => {
-                    inputsRef.current[index] = el;
-                  }}
-                  type="tel"
-                  inputMode="numeric"
-                  maxLength={1}
-                  className="h-12 w-12 rounded-2xl border border-slate-700 bg-slate-900 text-center text-xl font-semibold tracking-widest text-slate-50 outline-none focus:border-[#FF7A00]"
-                  value={v}
-                  onChange={(e) => handleChange(index, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(index, e)}
-                />
-              ))}
-            </div>
+        <div className="mb-2 text-4xl">🔐</div>
+        <h1
+          className="text-[28px] font-extrabold text-[var(--text)]"
+          style={{ letterSpacing: "-0.8px" }}
+        >
+          Doğrulama kodu
+        </h1>
+        <p className="mt-2 text-sm text-[var(--text-dim)]">
+          +90 {phone || "5XX XXX XX XX"} numarasına gönderdik.
+        </p>
 
-            <button
-              type="button"
-              disabled={loading}
-              className="text-sm font-medium text-[#FF7A00] disabled:opacity-50"
-              onClick={() => router.push(`/auth/login?phone=${encodeURIComponent(phone)}`)}
-            >
-              Tekrar Gönder
-            </button>
-          </div>
+        <div className="mt-8 flex justify-between gap-2">
+          {values.map((v, index) => (
+            <input
+              key={index}
+              ref={(el) => {
+                inputsRef.current[index] = el;
+              }}
+              type="tel"
+              inputMode="numeric"
+              maxLength={1}
+              className={`h-[54px] w-full max-w-[52px] rounded-[14px] border border-transparent text-center text-xl font-bold text-[var(--text)] outline-none focus:border-[#111] ${
+                v ? "bg-[#111] text-white" : "bg-[var(--bg-soft)]"
+              }`}
+              value={v}
+              onChange={(e) => handleChange(index, e.target.value)}
+              onKeyDown={(e) => handleKeyDown(index, e)}
+            />
+          ))}
+        </div>
 
-          {error && (
-            <p className="text-sm text-red-400">
-              {error}
-            </p>
-          )}
+        <button
+          type="button"
+          disabled={loading}
+          className="mt-4 text-sm font-semibold text-[var(--text-muted)] disabled:opacity-50"
+          onClick={() =>
+            router.push(`/auth/login?phone=${encodeURIComponent(phone)}`)
+          }
+        >
+          Tekrar Gönder
+        </button>
 
-          <p className="mt-2 text-xs text-amber-400">
+        {error && (
+          <p className="mt-4 text-sm text-red-500">{error}</p>
+        )}
+
+        <div className="mt-6 rounded-[14px] bg-[var(--bg-soft)] px-4 py-3">
+          <p className="text-xs font-bold text-[var(--green)]">
             Test modu: 123456 kodunu girerek devam edebilirsin.
           </p>
+        </div>
 
-          <p className="mt-6 text-xs text-slate-500">
-            Kodu girerek YOLDA&apos;nın kullanım şartlarını ve gizlilik
-            politikasını kabul edersin.
-          </p>
-        </section>
+        <p className="mt-6 text-xs text-[var(--text-dim)]">
+          Kodu girerek YOLDA&apos;nın kullanım şartlarını ve gizlilik
+          politikasını kabul edersin.
+        </p>
       </main>
     </div>
   );
@@ -137,7 +139,7 @@ export default function OtpPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-background text-sm text-slate-400">
+        <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] text-sm text-[var(--text-dim)]">
           Kod ekranı yükleniyor...
         </div>
       }
@@ -146,4 +148,3 @@ export default function OtpPage() {
     </Suspense>
   );
 }
-

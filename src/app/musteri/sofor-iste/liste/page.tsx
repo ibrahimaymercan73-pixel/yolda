@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { getCurrentUser } from "@/lib/auth";
@@ -15,55 +15,21 @@ type VehicleRow = {
   is_active: boolean;
 };
 
-type Driver = {
-  id: string;
-  name: string;
-  emoji: string;
-  rating: number;
-  trips: number;
-  region: string;
-  price: string;
-  eta: string;
+type DriverProfileRow = {
+  user_id: string;
+  rating: number | null;
+  total_trips: number | null;
+  region: string | null;
+  users: { full_name: string | null }[] | null;
 };
-
-const MOCK_DRIVERS: Driver[] = [
-  {
-    id: "1",
-    name: "Ahmet",
-    emoji: "🧑‍✈️",
-    rating: 4.9,
-    trips: 320,
-    region: "Kadıköy / Moda",
-    price: "320 TL",
-    eta: "8 dk",
-  },
-  {
-    id: "2",
-    name: "Zeynep",
-    emoji: "👩‍✈️",
-    rating: 4.8,
-    trips: 210,
-    region: "Üsküdar / Altunizade",
-    price: "340 TL",
-    eta: "11 dk",
-  },
-  {
-    id: "3",
-    name: "Emre",
-    emoji: "🧑‍✈️",
-    rating: 4.7,
-    trips: 180,
-    region: "Ataşehir / Kozyatağı",
-    price: "300 TL",
-    eta: "15 dk",
-  },
-];
 
 export default function SoforListePage() {
   const router = useRouter();
   const [vehicle, setVehicle] = useState<VehicleRow | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [drivers, setDrivers] = useState<DriverProfileRow[]>([]);
+  const [driversLoading, setDriversLoading] = useState(true);
+  const [selectedId, setSelectedId] = useState<string | null>(null); // driver user_id
+  const [loading, setLoading] = useState(false); // request create
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -88,6 +54,42 @@ export default function SoforListePage() {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchDrivers() {
+      setDriversLoading(true);
+      setError(null);
+      try {
+        const { data, error: dError } = await supabase
+          .from("driver_profiles")
+          .select("user_id, rating, total_trips, region, users(full_name)")
+          .eq("is_online", true)
+          .eq("is_approved", true);
+        if (dError) throw dError;
+        if (!cancelled) {
+          const list = (data ?? []) as DriverProfileRow[];
+          setDrivers(list);
+          setSelectedId(list[0]?.user_id ?? null);
+        }
+      } catch (err) {
+        console.error(err);
+        if (!cancelled) setError("Şoförler yüklenemedi. Lütfen tekrar dene.");
+      } finally {
+        if (!cancelled) setDriversLoading(false);
+      }
+    }
+    fetchDrivers();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const driverCountText = useMemo(() => {
+    if (driversLoading) return "Yükleniyor...";
+    if (drivers.length === 0) return "Şu an müsait şoför yok";
+    return `${drivers.length} müsait şoför bulundu`;
+  }, [drivers.length, driversLoading]);
+
   const handleContinue = async () => {
     if (!selectedId || loading) return;
     setLoading(true);
@@ -104,8 +106,11 @@ export default function SoforListePage() {
       const dropoff_lat = 40.979;
       const dropoff_lng = 29.029;
 
-      const chosenDriver = MOCK_DRIVERS.find((d) => d.id === selectedId)!;
-      const priceNumber = Number(chosenDriver.price.replace(/[^\d]/g, ""));
+      const chosen = drivers.find((d) => d.user_id === selectedId);
+      const rating = chosen?.rating ?? 4.8;
+      const trips = chosen?.total_trips ?? 0;
+      const base = 280;
+      const priceNumber = Math.round(base + (5 - rating) * 30 + Math.min(trips, 400) * 0.2);
 
       const { data, error: insertError } = await supabase
         .from("ride_requests")
@@ -121,7 +126,7 @@ export default function SoforListePage() {
           type: "hemen",
           scheduled_at: null,
           status: "bekliyor",
-          driver_id: chosenDriver.id,
+          driver_id: selectedId,
           price: priceNumber,
         })
         .select("id")
@@ -157,7 +162,7 @@ export default function SoforListePage() {
           Yakın Şoförler
         </h1>
         <p className="mt-1 text-sm font-semibold text-[var(--green)]">
-          3 müsait şoför bulundu
+          {driverCountText}
         </p>
 
         <section className="mt-6 flex flex-1 flex-col">
@@ -197,52 +202,65 @@ export default function SoforListePage() {
             )}
 
             <div className="space-y-3">
-              {MOCK_DRIVERS.map((driver) => {
-                const active = selectedId === driver.id;
-                return (
-                  <button
-                    key={driver.id}
-                    type="button"
-                    onClick={() => setSelectedId(driver.id)}
-                    className={`w-full rounded-[16px] border p-4 text-left text-sm transition ${
-                      active
-                        ? "border-[#111] bg-[var(--bg-card)] ring-2 ring-[#111]"
-                        : "border-[var(--border)] bg-[var(--bg-card)]"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-3">
-                        <span className="mt-1 text-2xl">{driver.emoji}</span>
-                        <div>
-                          <p className="font-bold text-[var(--text)]">
-                            {driver.name}{" "}
-                            <span className="text-xs text-[var(--text-dim)]">
-                              ★ {driver.rating.toFixed(1)}
-                            </span>
-                          </p>
-                          <p className="mt-1 text-xs text-[var(--text-dim)]">
-                            {driver.region} • {driver.trips} sefer
-                          </p>
+              {driversLoading && (
+                <div className="flex items-center justify-center rounded-[16px] border border-[var(--border)] bg-[var(--bg-card)] p-6">
+                  <div className="flex items-center gap-3 text-sm font-semibold text-[var(--text-dim)]">
+                    <span className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--border)] border-t-[#111]" />
+                    Şoförler yükleniyor...
+                  </div>
+                </div>
+              )}
+
+              {!driversLoading && drivers.length === 0 && (
+                <div className="rounded-[16px] border border-[var(--border)] bg-[var(--bg-card)] p-6 text-center text-sm font-semibold text-[var(--text-dim)]">
+                  Şu an müsait şoför yok
+                </div>
+              )}
+
+              {!driversLoading &&
+                drivers.map((driver, idx) => {
+                  const active = selectedId === driver.user_id;
+                  const name = driver.users?.[0]?.full_name ?? "Şoför";
+                  const rating = driver.rating ?? 0;
+                  const trips = driver.total_trips ?? 0;
+                  const region = driver.region ?? "-";
+                  const emoji = idx % 2 === 0 ? "🧑‍✈️" : "👩‍✈️";
+                  return (
+                    <button
+                      key={driver.user_id}
+                      type="button"
+                      onClick={() => setSelectedId(driver.user_id)}
+                      className={`w-full rounded-[16px] border p-4 text-left text-sm transition ${
+                        active
+                          ? "border-[#111] bg-[var(--bg-card)] ring-2 ring-[#111]"
+                          : "border-[var(--border)] bg-[var(--bg-card)]"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3">
+                          <span className="mt-1 text-2xl">{emoji}</span>
+                          <div>
+                            <p className="font-bold text-[var(--text)]">
+                              {name}{" "}
+                              <span className="text-xs text-[var(--text-dim)]">
+                                ★ {rating ? rating.toFixed(1) : "-"}
+                              </span>
+                            </p>
+                            <p className="mt-1 text-xs text-[var(--text-dim)]">
+                              {region} • {trips} sefer
+                            </p>
+                          </div>
                         </div>
                       </div>
-                      <div className="text-right text-xs">
-                        <p className="font-bold text-[var(--text)]">
-                          {driver.price}
-                        </p>
-                        <p className="mt-1 text-xs text-[var(--green)]">
-                          {driver.eta} tahmini
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
+                    </button>
+                  );
+                })}
             </div>
           </div>
 
           <button
             type="button"
-            disabled={!selectedId || loading}
+            disabled={!selectedId || loading || driversLoading || drivers.length === 0}
             onClick={handleContinue}
             className="mt-6 w-full rounded-[14px] bg-[#111] px-4 py-4 text-[15px] font-bold text-white disabled:opacity-50"
           >

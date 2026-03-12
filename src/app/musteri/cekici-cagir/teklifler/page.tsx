@@ -5,18 +5,21 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
-type TowOfferRow = {
-  id: string;
-  tow_provider_id: string;
-  price: number;
+type TowProfileRow = {
+  user_id: string;
+  rating: number | null;
+  total_jobs: number | null;
+  equipment_type: string | null;
+  capacity_ton: number | null;
+  users: { full_name: string | null }[] | null;
 };
 
 function CekiciTekliflerContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestId = searchParams.get("request_id");
-  const [offers, setOffers] = useState<TowOfferRow[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [providers, setProviders] = useState<TowProfileRow[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null); // tow_provider user_id
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,28 +27,30 @@ function CekiciTekliflerContent() {
   useEffect(() => {
     if (!requestId) return;
     let cancelled = false;
-    async function fetchOffers() {
+    async function fetchProviders() {
       setLoading(true);
       setError(null);
       try {
-        const { data, error: oError } = await supabase
-          .from("tow_offers")
-          .select("id,tow_provider_id,price,status")
-          .eq("tow_request_id", requestId)
-          .eq("status", "bekliyor");
-        if (oError) throw oError;
+        // Tow provider list (online + approved)
+        const { data, error: pError } = await supabase
+          .from("tow_profiles")
+          .select("user_id, rating, total_jobs, equipment_type, capacity_ton, users(full_name)")
+          .eq("is_online", true)
+          .eq("is_approved", true);
+        if (pError) throw pError;
         if (!cancelled) {
-          setOffers((data ?? []) as TowOfferRow[]);
-          setSelectedId(data?.[0]?.id ?? null);
+          const list = (data ?? []) as TowProfileRow[];
+          setProviders(list);
+          setSelectedId(list[0]?.user_id ?? null);
         }
       } catch (err) {
         console.error(err);
-        if (!cancelled) setError("Teklifler yüklenemedi.");
+        if (!cancelled) setError("Çekiciler yüklenemedi.");
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
-    fetchOffers();
+    fetchProviders();
     return () => {
       cancelled = true;
     };
@@ -56,21 +61,27 @@ function CekiciTekliflerContent() {
     setSaving(true);
     setError(null);
     try {
-      await supabase
-        .from("tow_offers")
-        .update({ status: "kabul" })
-        .eq("id", selectedId);
+      // Demo akışı: müşteri seçimiyle kabul edilmiş bir teklif oluşturuyoruz
+      const chosen = providers.find((p) => p.user_id === selectedId);
+      const base = 650;
+      const jobs = chosen?.total_jobs ?? 0;
+      const cap = chosen?.capacity_ton ?? 0;
+      const price = Math.round(base + Math.min(jobs, 200) * 1.2 + cap * 40);
 
-      await supabase
-        .from("tow_offers")
-        .update({ status: "red" })
-        .eq("tow_request_id", requestId)
-        .neq("id", selectedId);
+      const { error: insertError } = await supabase.from("tow_offers").insert({
+        tow_request_id: requestId,
+        tow_provider_id: selectedId,
+        price,
+        estimated_minutes: 15,
+        status: "kabul",
+      });
+      if (insertError) throw insertError;
 
-      await supabase
+      const { error: statusError } = await supabase
         .from("tow_requests")
         .update({ status: "eslesti" })
         .eq("id", requestId);
+      if (statusError) throw statusError;
 
       router.push(`/musteri/cekici-cagir/yolda?request_id=${requestId}`);
     } catch (err) {
@@ -95,27 +106,42 @@ function CekiciTekliflerContent() {
           className="text-[28px] font-extrabold text-[var(--text)]"
           style={{ letterSpacing: "-0.8px" }}
         >
-          3 Teklif Geldi 🎯
+          Çekici Seç
         </h1>
 
         <section className="mt-6 flex flex-1 flex-col">
           <div className="space-y-3">
             {loading && (
-              <p className="text-sm text-[var(--text-dim)]">
-                Teklifler yükleniyor...
-              </p>
+              <div className="flex items-center justify-center rounded-[16px] border border-[var(--border)] bg-[var(--bg-card)] p-6">
+                <div className="flex items-center gap-3 text-sm font-semibold text-[var(--text-dim)]">
+                  <span className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--border)] border-t-[#111]" />
+                  Çekiciler yükleniyor...
+                </div>
+              </div>
             )}
             {error && (
               <p className="text-sm text-red-500">{error}</p>
             )}
+
+            {!loading && providers.length === 0 && !error && (
+              <div className="rounded-[16px] border border-[var(--border)] bg-[var(--bg-card)] p-6 text-center text-sm font-semibold text-[var(--text-dim)]">
+                Şu an müsait çekici yok
+              </div>
+            )}
+
             {!loading &&
-              offers.map((offer) => {
-                const active = selectedId === offer.id;
+              providers.map((p) => {
+                const active = selectedId === p.user_id;
+                const name = p.users?.[0]?.full_name ?? "Çekici";
+                const rating = p.rating ?? 0;
+                const jobs = p.total_jobs ?? 0;
+                const equip = p.equipment_type ?? "-";
+                const cap = p.capacity_ton ?? null;
                 return (
                   <button
-                    key={offer.id}
+                    key={p.user_id}
                     type="button"
-                    onClick={() => setSelectedId(offer.id)}
+                    onClick={() => setSelectedId(p.user_id)}
                     className={`w-full rounded-[16px] border p-4 text-left text-sm transition ${
                       active
                         ? "border-[#111] bg-[var(--bg-card)] ring-2 ring-[#111]"
@@ -125,16 +151,18 @@ function CekiciTekliflerContent() {
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="font-bold text-[var(--text)]">
-                          Çekici Teklifi
+                          {name}{" "}
+                          <span className="text-xs text-[var(--text-dim)]">
+                            ★ {rating ? rating.toFixed(1) : "-"}
+                          </span>
                         </p>
                         <p className="mt-1 text-xs text-[var(--text-dim)]">
-                          Sağlayıcı: {offer.tow_provider_id.slice(0, 6)}…
+                          {jobs} iş • {equip}
+                          {cap !== null ? ` • ${cap} ton` : ""}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-[var(--green)]">
-                          ₺{offer.price}
-                        </p>
+                      <div className="text-right text-xs font-semibold text-[var(--green)]">
+                        Müsait
                       </div>
                     </div>
                   </button>
@@ -144,7 +172,7 @@ function CekiciTekliflerContent() {
 
           <button
             type="button"
-            disabled={!selectedId || saving}
+            disabled={!selectedId || saving || loading || providers.length === 0}
             onClick={handleConfirm}
             className="mt-6 w-full rounded-[14px] bg-[#111] px-4 py-4 text-[15px] font-bold text-white disabled:opacity-50"
           >

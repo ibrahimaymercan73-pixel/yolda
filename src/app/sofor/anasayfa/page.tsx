@@ -9,6 +9,7 @@ export default function SoforAnasayfaPage() {
   const router = useRouter();
   const [online, setOnline] = useState(false);
   const [savingOnline, setSavingOnline] = useState(false);
+  const [fullName, setFullName] = useState<string>("Şoför");
   const [requestsLoading, setRequestsLoading] = useState(true);
   const [requests, setRequests] = useState<
     Array<{
@@ -40,11 +41,21 @@ export default function SoforAnasayfaPage() {
 
         const { data: profile, error: pErr } = await supabase
           .from("driver_profiles")
-          .select("is_online")
+          .select("is_online,is_approved,full_name")
           .eq("user_id", user.id)
           .limit(1);
         if (!cancelled && !pErr) {
+          const row = profile?.[0];
+          if (!row) {
+            router.replace("/sofor/kayit");
+            return;
+          }
+          if (!row.is_approved) {
+            router.replace("/sofor/onay-bekliyor");
+            return;
+          }
           setOnline(Boolean(profile?.[0]?.is_online));
+          setFullName(String(row.full_name ?? "Şoför"));
         }
       } catch (err) {
         console.error(err);
@@ -63,7 +74,7 @@ export default function SoforAnasayfaPage() {
       const { data, error: rErr } = await supabase
         .from("ride_requests")
         .select("id,pickup_address,dropoff_address,price,status,created_at")
-        .eq("status", "bekliyor")
+        .in("status", ["bekliyor", "pending"])
         .order("created_at", { ascending: false });
       if (rErr) throw rErr;
       setRequests((data ?? []) as any);
@@ -109,7 +120,7 @@ export default function SoforAnasayfaPage() {
         .from("ride_requests")
         .update({ status: "eslesti", driver_id: user.id })
         .eq("id", requestId)
-        .eq("status", "bekliyor");
+        .in("status", ["bekliyor", "pending"]);
       if (updErr) throw updErr;
       router.push(`/sofor/navigasyon?request_id=${requestId}`);
     } catch (err) {
@@ -128,7 +139,7 @@ export default function SoforAnasayfaPage() {
     <div className="min-h-screen bg-[var(--bg)]">
       <main className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col px-5 py-6">
         <p className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
-          Şoför Paneli
+          {fullName}
         </p>
         <h1
           className="mt-1 text-[28px] font-extrabold text-[var(--text)]"

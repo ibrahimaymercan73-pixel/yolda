@@ -1,24 +1,56 @@
 "use client";
 
-import { Suspense } from "react";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+
+type Method = "phone" | "email";
 
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [method, setMethod] = useState<Method>(
+    (searchParams.get("method") as Method) || "phone"
+  );
   const [phone, setPhone] = useState(searchParams.get("phone") ?? "");
+  const [email, setEmail] = useState(searchParams.get("email") ?? "");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const digitsOnly = phone.replace(/\D/g, "");
-  const isValid = digitsOnly.length >= 10;
+  const phoneValid = digitsOnly.length >= 10;
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const isValid = method === "phone" ? phoneValid : emailValid;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValid || loading) return;
     setLoading(true);
-    router.push(`/auth/otp?phone=${encodeURIComponent(digitsOnly)}&test=1`);
-    setLoading(false);
+    setError(null);
+    try {
+      const endpoint =
+        method === "phone"
+          ? "/api/auth/send-otp"
+          : "/api/auth/send-email-otp";
+      const body =
+        method === "phone"
+          ? { phone: digitsOnly }
+          : { email: email.trim().toLowerCase() };
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || "Bir hata oluştu.");
+        return;
+      }
+      if (data.redirect) router.push(data.redirect);
+    } catch (err) {
+      setError("Bağlantı hatası. Tekrar deneyin.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -37,29 +69,70 @@ function LoginContent() {
           geldin.
         </h1>
         <p className="mt-2 text-sm text-[var(--text-dim)]">
-          Giriş yapmak için telefon numaranı gir.
+          Giriş yapmak için telefon veya e-posta kullan.
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-          <label className="block">
-            <span className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
-              Telefon
-            </span>
-            <div className="mt-2 flex items-center gap-2 rounded-[14px] bg-[var(--bg-soft)] px-4 py-[15px]">
-              <span className="text-base">🇹🇷</span>
-              <span className="text-sm font-semibold text-[var(--text)]">
-                +90
+        <div className="mt-6 flex rounded-[14px] bg-[var(--bg-soft)] p-1">
+          <button
+            type="button"
+            onClick={() => setMethod("phone")}
+            className={`flex-1 rounded-[12px] py-2.5 text-sm font-semibold ${
+              method === "phone"
+                ? "bg-[#111] text-white"
+                : "text-[var(--text-dim)]"
+            }`}
+          >
+            📱 Telefon
+          </button>
+          <button
+            type="button"
+            onClick={() => setMethod("email")}
+            className={`flex-1 rounded-[12px] py-2.5 text-sm font-semibold ${
+              method === "email"
+                ? "bg-[#111] text-white"
+                : "text-[var(--text-dim)]"
+            }`}
+          >
+            📧 E-posta
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          {method === "phone" ? (
+            <label className="block">
+              <span className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
+                Telefon
+              </span>
+              <div className="mt-2 flex items-center gap-2 rounded-[14px] bg-[var(--bg-soft)] px-4 py-[15px]">
+                <span className="text-base">🇹🇷</span>
+                <span className="text-sm font-semibold text-[var(--text)]">
+                  +90
+                </span>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  placeholder="5XX XXX XX XX"
+                  className="flex-1 bg-transparent text-sm font-semibold text-[var(--text)] outline-none placeholder:text-[var(--text-muted)]"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+              </div>
+            </label>
+          ) : (
+            <label className="block">
+              <span className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
+                E-posta
               </span>
               <input
-                type="tel"
-                inputMode="numeric"
-                placeholder="5XX XXX XX XX"
-                className="flex-1 bg-transparent text-sm font-semibold text-[var(--text)] outline-none placeholder:text-[var(--text-muted)]"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                type="email"
+                inputMode="email"
+                placeholder="ornek@email.com"
+                className="mt-2 w-full rounded-[14px] border border-transparent bg-[var(--bg-soft)] px-4 py-[15px] text-sm font-semibold text-[var(--text)] outline-none placeholder:text-[var(--text-muted)]"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
-            </div>
-          </label>
+            </label>
+          )}
 
           <button
             type="submit"
@@ -70,9 +143,9 @@ function LoginContent() {
           </button>
         </form>
 
-        <p className="mt-3 text-xs text-[var(--green)]">
-          Test modu: SMS gönderilmiyor, bir sonraki ekranda 123456 gir.
-        </p>
+        {error && (
+          <p className="mt-3 text-sm text-red-500">{error}</p>
+        )}
 
         <div className="mt-8 flex items-center gap-3 text-sm text-[var(--text-dim)]">
           <div className="h-px flex-1 bg-[var(--border)]" />
@@ -101,7 +174,7 @@ function LoginContent() {
           Hesabın yok mu?{" "}
           <button
             type="button"
-            className="text-[14px] font-medium text-[var(--text-muted)] hover:underline"
+            className="font-medium text-[var(--text-muted)] hover:underline"
             onClick={() => router.push("/auth/register")}
           >
             Kayıt Ol

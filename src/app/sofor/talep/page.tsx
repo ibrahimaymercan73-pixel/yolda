@@ -38,6 +38,7 @@ function SoforTalepContent() {
     setError(null);
     try {
       const user = await getCurrentUser();
+      if (!user) return;
       const { error: updateError } = await supabase
         .from("ride_requests")
         .update({ status: "eslesti", driver_id: user.id })

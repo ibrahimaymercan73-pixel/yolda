@@ -1,9 +1,9 @@
 import { supabase } from "./supabaseClient";
-import { getCurrentUser } from "./auth";
+import { getCurrentUserOrThrow } from "./auth";
 
 // Aktif aracı döndürür, yoksa hata fırlatır
 export async function getActiveVehicleId() {
-  const user = await getCurrentUser();
+  const user = await getCurrentUserOrThrow();
   const { data, error } = await supabase
     .from("vehicles")
     .select("id")

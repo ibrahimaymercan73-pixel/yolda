@@ -17,6 +17,7 @@ export default function SoforOnayBekliyorPage() {
       setError(null);
       try {
         const user = await getCurrentUser();
+        if (!user) return;
         const { data: profile, error: pErr } = await supabase
           .from("driver_profiles")
           .select("is_approved")

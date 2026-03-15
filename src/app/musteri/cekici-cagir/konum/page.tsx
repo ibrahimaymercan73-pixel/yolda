@@ -1,12 +1,95 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+
+const Map = dynamic(() => import("@/components/Map"), { ssr: false });
+
+const NOMINATIM = "https://nominatim.openstreetmap.org";
+
+async function reverseGeocode(lat: number, lon: number): Promise<string> {
+  const res = await fetch(
+    `${NOMINATIM}/reverse?lat=${lat}&lon=${lon}&format=json`,
+    { headers: { "Accept-Language": "tr" } }
+  );
+  const data = await res.json();
+  return data?.display_name ?? `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+}
+
+async function searchAddress(q: string): Promise<Array<{ display_name: string; lat: string; lon: string }>> {
+  if (!q.trim() || q.length < 3) return [];
+  const res = await fetch(
+    `${NOMINATIM}/search?q=${encodeURIComponent(q)}&format=json&countrycodes=tr&limit=5`,
+    { headers: { "Accept-Language": "tr" } }
+  );
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}
 
 export default function CekiciKonumPage() {
   const router = useRouter();
-  const [from, setFrom] = useState("Kadıköy, İstanbul");
+  const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [fromCoords, setFromCoords] = useState<[number, number] | null>(null);
+  const [toCoords, setToCoords] = useState<[number, number] | null>(null);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([41.0082, 28.9784]);
+  const [toSuggestions, setToSuggestions] = useState<Array<{ display_name: string; lat: string; lon: string }>>([]);
+  const toDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!navigator?.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        setMapCenter([lat, lon]);
+        setFromCoords([lat, lon]);
+        const addr = await reverseGeocode(lat, lon);
+        setFrom(addr);
+      },
+      () => setFrom("Konum alınamadı")
+    );
+  }, []);
+
+  const onToChange = useCallback((value: string) => {
+    setTo(value);
+    setToCoords(null);
+    if (toDebounce.current) clearTimeout(toDebounce.current);
+    if (value.trim().length < 3) {
+      setToSuggestions([]);
+      return;
+    }
+    toDebounce.current = setTimeout(async () => {
+      const list = await searchAddress(value);
+      setToSuggestions(list);
+      toDebounce.current = null;
+    }, 400);
+  }, []);
+
+  const pickTo = (item: { display_name: string; lat: string; lon: string }) => {
+    setTo(item.display_name);
+    setToCoords([parseFloat(item.lat), parseFloat(item.lon)]);
+    setToSuggestions([]);
+  };
+
+  const canContinue = from.trim() && to.trim();
+
+  const handleContinue = () => {
+    if (!canContinue) return;
+    const payload = {
+      fromAddress: from,
+      toAddress: to,
+      fromLat: fromCoords?.[0],
+      fromLng: fromCoords?.[1],
+      toLat: toCoords?.[0],
+      toLng: toCoords?.[1],
+    };
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem("cekiciKonum", JSON.stringify(payload));
+    }
+    router.push("/musteri/cekici-cagir/detaylar");
+  };
 
   return (
     <div className="min-h-screen bg-[var(--bg)]">
@@ -18,107 +101,63 @@ export default function CekiciKonumPage() {
         >
           ←
         </button>
-        <h1
-          className="text-[28px] font-extrabold text-[var(--text)]"
-          style={{ letterSpacing: "-0.8px" }}
-        >
+        <h1 className="text-[28px] font-extrabold text-[var(--text)]" style={{ letterSpacing: "-0.8px" }}>
           Çekici Çağır
         </h1>
 
-        <section className="mt-6 flex flex-1 flex-col">
-          <div className="space-y-4">
-            <div className="rounded-[16px] border border-[var(--border)] bg-[var(--bg-card)] p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex flex-col items-center gap-1">
-                  <span className="h-2 w-2 rounded-full bg-red-500" />
-                  <span className="h-5 w-px bg-[var(--border)]" />
-                  <span className="h-2 w-2 rounded-full bg-[var(--green)]" />
-                </div>
-                <div className="flex-1 space-y-3">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
-                      Araç nerede?
-                    </span>
-                    <input
-                      value={from}
-                      onChange={(e) => setFrom(e.target.value)}
-                      className="mt-1 w-full rounded-[14px] border border-transparent bg-[var(--bg-soft)] px-4 py-3 text-sm font-semibold text-[var(--text)] outline-none"
-                    />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
-                      Nereye götürülsün?
-                    </span>
-                    <input
-                      value={to}
-                      onChange={(e) => setTo(e.target.value)}
-                      placeholder="Varış adresini yaz"
-                      className="mt-1 w-full rounded-[14px] border border-transparent bg-[var(--bg-soft)] px-4 py-3 text-sm font-semibold text-[var(--text)] placeholder:text-[var(--text-muted)] outline-none"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div className="mt-4 h-[200px] rounded-[16px] overflow-hidden bg-[var(--bg-soft)]">
+          <Map center={mapCenter} from={fromCoords} to={toCoords} className="h-full w-full" />
+        </div>
 
-            <div className="space-y-2">
-              <span className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">
-                Hızlı seçenekler
-              </span>
-              <div className="flex flex-wrap gap-2 text-xs">
-                <button
-                  type="button"
-                  onClick={() => setTo("Evim")}
-                  className="rounded-[14px] bg-[var(--bg-soft)] px-4 py-3 font-semibold text-[var(--text)]"
-                >
-                  🏠 Evim
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTo("Yakın Servis")}
-                  className="rounded-[14px] bg-[var(--bg-soft)] px-4 py-3 font-semibold text-[var(--text)]"
-                >
-                  🔧 Yakın Servis
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTo("Tamirci")}
-                  className="rounded-[14px] bg-[var(--bg-soft)] px-4 py-3 font-semibold text-[var(--text)]"
-                >
-                  🔩 Tamirci
-                </button>
-              </div>
-            </div>
-
-            <div className="relative h-40 overflow-hidden rounded-[16px] bg-[var(--bg-soft)]">
-              <div className="absolute inset-0 opacity-30">
-                <div className="absolute left-8 top-0 h-full w-px bg-[var(--border)]" />
-                <div className="absolute right-10 top-0 h-full w-px bg-[var(--border)]" />
-                <div className="absolute left-0 top-10 h-px w-full bg-[var(--border)]" />
-                <div className="absolute left-0 bottom-8 h-px w-full bg-[var(--border)]" />
-              </div>
-              <div className="relative h-full w-full">
-                <span className="absolute left-8 bottom-6 text-xl font-bold text-[var(--text)]">
-                  A
-                </span>
-                <span className="absolute right-10 top-6 text-xl font-bold text-[var(--text)]">
-                  B
-                </span>
-                <div className="absolute left-10 top-8 h-1 w-40 rotate-6 bg-[var(--text-muted)]/50" />
-              </div>
-              <div className="absolute left-3 top-3 rounded-full bg-black/10 px-3 py-1 text-[10px] font-semibold text-[var(--text)]">
-                ~ 12 km • 18 dk
-              </div>
-            </div>
+        <section className="mt-6 space-y-4">
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">Araç nerede?</span>
+            <input
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+              className="mt-1 w-full rounded-[14px] border border-transparent bg-[var(--bg-soft)] px-4 py-3 text-sm font-semibold text-[var(--text)] outline-none"
+              placeholder="Konum alınıyor..."
+            />
           </div>
-
-          <button
-            type="button"
-            onClick={() => router.push("/musteri/cekici-cagir/detaylar")}
-            className="mt-6 w-full rounded-[14px] bg-[#111] px-4 py-4 text-[15px] font-bold text-white"
-          >
-            Devam Et
-          </button>
+          <div className="relative">
+            <span className="text-[10px] font-bold uppercase tracking-[2px] text-[var(--text-muted)]">Nereye götürülsün?</span>
+            <input
+              value={to}
+              onChange={(e) => onToChange(e.target.value)}
+              className="mt-1 w-full rounded-[14px] border border-transparent bg-[var(--bg-soft)] px-4 py-3 text-sm font-semibold text-[var(--text)] outline-none placeholder:text-[var(--text-muted)]"
+              placeholder="Varış adresini yaz"
+            />
+            {toSuggestions.length > 0 && (
+              <ul className="absolute top-full left-0 right-0 z-10 mt-1 rounded-[14px] border border-[var(--border)] bg-white py-2 shadow-lg">
+                {toSuggestions.map((item, i) => (
+                  <li key={i}>
+                    <button
+                      type="button"
+                      className="w-full px-4 py-2 text-left text-sm text-[var(--text)] hover:bg-[var(--bg-soft)]"
+                      onClick={() => pickTo(item)}
+                    >
+                      {item.display_name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => setTo("Evim")} className="rounded-[14px] bg-[var(--bg-soft)] px-4 py-3 text-sm font-semibold text-[var(--text)]">🏠 Evim</button>
+            <button type="button" onClick={() => setTo("Yakın Servis")} className="rounded-[14px] bg-[var(--bg-soft)] px-4 py-3 text-sm font-semibold text-[var(--text)]">🔧 Yakın Servis</button>
+            <button type="button" onClick={() => setTo("Tamirci")} className="rounded-[14px] bg-[var(--bg-soft)] px-4 py-3 text-sm font-semibold text-[var(--text)]">🛠 Tamirci</button>
+          </div>
         </section>
+
+        <button
+          type="button"
+          disabled={!canContinue}
+          onClick={handleContinue}
+          className="mt-6 w-full rounded-[14px] bg-[#111] px-4 py-4 text-[15px] font-bold text-white disabled:opacity-50"
+        >
+          Devam Et
+        </button>
       </main>
     </div>
   );

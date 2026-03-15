@@ -22,6 +22,7 @@ function CekiciTalepContent() {
     setError(null);
     try {
       const user = await getCurrentUser();
+      if (!user) return;
       const numericPrice = Number(price);
 
       const { data, error: insertError } = await supabase

@@ -62,6 +62,10 @@ export default function OnboardPage() {
     async function fetchVehicles() {
       try {
         const user = await getCurrentUser();
+        if (!user) {
+          if (!cancelled) router.replace("/auth/login");
+          return;
+        }
         const { data, error: vError } = await supabase
           .from("vehicles")
           .select("id")
@@ -71,13 +75,14 @@ export default function OnboardPage() {
         if (!cancelled) setHasExisting((data?.length ?? 0) > 0);
       } catch (err) {
         console.error(err);
+        if (!cancelled) router.replace("/auth/login");
       }
     }
     fetchVehicles();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [router]);
 
   const normalizedPlate = useMemo(
     () => plate.toUpperCase().replace(/\s+/g, ""),
@@ -92,6 +97,10 @@ export default function OnboardPage() {
     setError(null);
     try {
       const user = await getCurrentUser();
+      if (!user) {
+        router.replace("/auth/login");
+        return;
+      }
 
       if (!hasExisting) {
         await supabase

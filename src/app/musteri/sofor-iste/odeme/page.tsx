@@ -24,6 +24,7 @@ function SoforOdemeContent() {
     setError(null);
     try {
       const user = await getCurrentUser();
+      if (!user) return;
 
       const { data: req, error: reqError } = await supabase
         .from("ride_requests")

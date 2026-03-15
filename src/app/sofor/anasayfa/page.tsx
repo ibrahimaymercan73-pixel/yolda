@@ -28,6 +28,7 @@ export default function SoforAnasayfaPage() {
     async function bootstrap() {
       try {
         const user = await getCurrentUser();
+        if (!user) return;
         const { data: roleRow, error: roleErr } = await supabase
           .from("users")
           .select("role")
@@ -97,6 +98,7 @@ export default function SoforAnasayfaPage() {
     setError(null);
     try {
       const user = await getCurrentUser();
+      if (!user) return;
       const next = !online;
       const { error: updErr } = await supabase
         .from("driver_profiles")
@@ -116,6 +118,7 @@ export default function SoforAnasayfaPage() {
     setError(null);
     try {
       const user = await getCurrentUser();
+      if (!user) return;
       const { error: updErr } = await supabase
         .from("ride_requests")
         .update({ status: "eslesti", driver_id: user.id })

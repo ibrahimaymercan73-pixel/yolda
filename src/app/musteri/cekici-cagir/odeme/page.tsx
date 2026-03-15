@@ -24,6 +24,7 @@ function CekiciOdemeContent() {
     setError(null);
     try {
       const user = await getCurrentUser();
+      if (!user) return;
 
       const { data: offer, error: offerError } = await supabase
         .from("tow_offers")

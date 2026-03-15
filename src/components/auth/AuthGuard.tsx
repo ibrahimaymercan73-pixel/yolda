@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
 
 type Props = {
   children: React.ReactNode;
@@ -21,10 +20,12 @@ export function AuthGuard({ children }: Props) {
       setLoading(true);
       setError(null);
       try {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        if (!data.session) {
-          router.replace(`/auth/login?redirect=${encodeURIComponent(pathname)}`);
+        const res = await fetch("/api/auth/me", { credentials: "include" });
+        if (!res.ok) {
+          if (!cancelled)
+            router.replace(
+              `/auth/login?redirect=${encodeURIComponent(pathname)}`
+            );
           return;
         }
       } catch (err) {
@@ -44,7 +45,7 @@ export function AuthGuard({ children }: Props) {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background text-sm text-slate-300">
+      <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] text-sm text-[var(--text-dim)]">
         Oturum kontrol ediliyor...
       </div>
     );
@@ -52,7 +53,7 @@ export function AuthGuard({ children }: Props) {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-4 text-center text-sm text-red-400">
+      <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] px-4 text-center text-sm text-red-500">
         {error}
       </div>
     );
@@ -60,4 +61,3 @@ export function AuthGuard({ children }: Props) {
 
   return <>{children}</>;
 }
-

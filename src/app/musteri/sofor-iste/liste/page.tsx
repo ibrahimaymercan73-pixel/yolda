@@ -37,6 +37,7 @@ export default function SoforListePage() {
     async function fetchActiveVehicle() {
       try {
         const user = await getCurrentUser();
+        if (!user) return;
         const { data } = await supabase
           .from("vehicles")
           .select("*")
@@ -97,6 +98,7 @@ export default function SoforListePage() {
 
     try {
       const user = await getCurrentUser();
+      if (!user) return;
       const vehicleId = await getActiveVehicleId();
 
       const pickup_address = "Bağdat Caddesi, Kadıköy";

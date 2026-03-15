@@ -216,6 +216,7 @@ export default function SoforKayitPage() {
     setError(null);
     try {
       const user = await getCurrentUser();
+      if (!user) throw new Error("Oturum bulunamadı");
 
       // 1) users.role = 'sofor'
       const { error: userUpErr } = await supabase.from("users").upsert(

@@ -27,6 +27,10 @@ export default function GarajPage() {
       setError(null);
       try {
         const user = await getCurrentUser();
+        if (!user) {
+          if (!cancelled) setVehicles([]);
+          return;
+        }
         const { data, error: vError } = await supabase
           .from("vehicles")
           .select("*")
@@ -50,6 +54,7 @@ export default function GarajPage() {
   const handleSetActive = async (id: string) => {
     try {
       const user = await getCurrentUser();
+      if (!user) return;
       setError(null);
       await supabase
         .from("vehicles")
